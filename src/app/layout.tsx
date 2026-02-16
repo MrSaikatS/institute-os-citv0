@@ -1,4 +1,3 @@
-import Header from "@/components/Header/Header";
 import ThemeProvider from "@/components/Providers/ThemeProvider";
 import { geistMono, geistSans } from "@/lib/fonts";
 import { ReactNode } from "react";
@@ -19,9 +18,7 @@ const RootLayout = ({ children }: RootLayoutProps) => {
           attribute={"class"}
           defaultTheme="dark"
           enableSystem={false}>
-          <Header />
-
-          <main className="mx-auto max-w-7xl">{children}</main>
+          {children}
         </ThemeProvider>
       </body>
     </html>
