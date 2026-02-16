@@ -6,7 +6,11 @@ CREATE TABLE "user" (
     "emailVerified" BOOLEAN NOT NULL DEFAULT false,
     "image" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "updatedAt" DATETIME NOT NULL,
+    "role" TEXT NOT NULL,
+    "banned" BOOLEAN DEFAULT false,
+    "banReason" TEXT,
+    "banExpires" DATETIME
 );
 
 -- CreateTable
@@ -19,6 +23,7 @@ CREATE TABLE "session" (
     "ipAddress" TEXT,
     "userAgent" TEXT,
     "userId" TEXT NOT NULL,
+    "impersonatedBy" TEXT,
     CONSTRAINT "session_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -50,8 +55,19 @@ CREATE TABLE "verification" (
     "updatedAt" DATETIME NOT NULL
 );
 
+-- CreateTable
+CREATE TABLE "student_profile" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "userId" TEXT NOT NULL,
+    "status" TEXT NOT NULL DEFAULT 'INACTIVE',
+    CONSTRAINT "student_profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
 -- CreateIndex
 CREATE INDEX "user_createdAt_idx" ON "user"("createdAt");
+
+-- CreateIndex
+CREATE INDEX "user_role_idx" ON "user"("role");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
@@ -79,3 +95,9 @@ CREATE INDEX "verification_identifier_idx" ON "verification"("identifier");
 
 -- CreateIndex
 CREATE INDEX "verification_expiresAt_idx" ON "verification"("expiresAt");
+
+-- CreateIndex
+CREATE INDEX "student_profile_status_idx" ON "student_profile"("status");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "student_profile_userId_key" ON "student_profile"("userId");
