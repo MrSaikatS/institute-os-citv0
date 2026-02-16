@@ -1,3 +1,4 @@
+import RegisterForm from "@/components/Forms/RegisterForm";
 import {
   Card,
   CardContent,
@@ -28,13 +29,15 @@ const page = () => {
         </CardDescription>
       </CardHeader>
 
-      <CardContent>{/* <RegisterForm /> */}</CardContent>
+      <CardContent>
+        <RegisterForm />
+      </CardContent>
 
       <CardFooter className="justify-center">
         Already have an account?
         <Link
           href={"/"}
-          className="mx-1 text-blue-600 hover:underline">
+          className="mx-1 text-blue-500 hover:underline">
           Login
         </Link>
         now
