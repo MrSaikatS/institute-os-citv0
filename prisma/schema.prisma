@@ -11,6 +11,8 @@ datasource db {
   provider = "sqlite"
 }
 
+// ==================== BETTER AUTH MODELS ====================
+
 model User {
   id            String    @id @default(uuid())
   name          String
@@ -77,4 +79,10 @@ model Verification {
   @@index([identifier])
   @@index([expiresAt])
   @@map("verification")
+}
+
+// ==================== MODELS ====================
+
+model StudentProfile {
+  id String @id @default(uuid())
 }
