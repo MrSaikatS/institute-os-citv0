@@ -83,7 +83,7 @@ function SidebarProvider({
       }
 
       // This sets the cookie to keep the sidebar state.
-      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}`;
+      document.cookie = `${SIDEBAR_COOKIE_NAME}=${openState}; path=/; max-age=${SIDEBAR_COOKIE_MAX_AGE}; SameSite=Lax${window.location.protocol === "https:" ? "; Secure" : ""}`;
     },
     [setOpenProp, open],
   );
@@ -407,6 +407,10 @@ function SidebarGroupLabel({
       slot: "sidebar-group-label",
       sidebar: "group-label",
     },
+    stateAttributesMapping: {
+      slot: (value) => ({ "data-slot": value }),
+      sidebar: (value) => ({ "data-sidebar": value }),
+    },
   });
 }
 
@@ -430,6 +434,10 @@ function SidebarGroupAction({
     state: {
       slot: "sidebar-group-action",
       sidebar: "group-action",
+    },
+    stateAttributesMapping: {
+      slot: (value) => ({ "data-slot": value }),
+      sidebar: (value) => ({ "data-sidebar": value }),
     },
   });
 }
@@ -471,7 +479,7 @@ function SidebarMenuItem({ className, ...props }: React.ComponentProps<"li">) {
 }
 
 const sidebarMenuButtonVariants = cva(
-  "ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2 rounded-md p-2 text-left text-sm transition-[width,height,padding] group-has-data-[sidebar=menu-action]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! focus-visible:ring-2 data-active:font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&_svg]:size-4 [&_svg]:shrink-0",
+  "ring-sidebar-ring hover:bg-sidebar-accent hover:text-sidebar-accent-foreground active:bg-sidebar-accent active:text-sidebar-accent-foreground data-active:bg-sidebar-accent data-active:text-sidebar-accent-foreground data-open:hover:bg-sidebar-accent data-open:hover:text-sidebar-accent-foreground gap-2 rounded-md p-2 text-left text-sm transition-[width,height,padding] group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! focus-visible:ring-2 data-active:font-medium peer/menu-button flex w-full items-center overflow-hidden outline-hidden group/menu-button disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 [&>span:last-child]:truncate [&_svg]:size-4 [&_svg]:shrink-0",
   {
     variants: {
       variant: {
@@ -520,6 +528,12 @@ function SidebarMenuButton({
       sidebar: "menu-button",
       size,
       active: isActive,
+    },
+    stateAttributesMapping: {
+      slot: (value) => ({ "data-slot": value }),
+      sidebar: (value) => ({ "data-sidebar": value }),
+      size: (value) => (value ? { "data-size": value } : null),
+      active: (value) => (value ? { "data-active": "true" } : null),
     },
   });
 
@@ -572,6 +586,10 @@ function SidebarMenuAction({
     state: {
       slot: "sidebar-menu-action",
       sidebar: "menu-action",
+    },
+    stateAttributesMapping: {
+      slot: (value) => ({ "data-slot": value }),
+      sidebar: (value) => ({ "data-sidebar": value }),
     },
   });
 }
@@ -686,6 +704,12 @@ function SidebarMenuSubButton({
       sidebar: "menu-sub-button",
       size,
       active: isActive,
+    },
+    stateAttributesMapping: {
+      slot: (value) => ({ "data-slot": value }),
+      sidebar: (value) => ({ "data-sidebar": value }),
+      size: (value) => (value ? { "data-size": value } : null),
+      active: (value) => (value ? { "data-active": "true" } : null),
     },
   });
 }
