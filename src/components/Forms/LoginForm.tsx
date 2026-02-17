@@ -27,6 +27,7 @@ const LoginForm = () => {
       password: "",
       rememberMe: true,
     },
+    mode: "all",
   });
 
   const loginFormHandler = async (loginData: LoginFormType) => {

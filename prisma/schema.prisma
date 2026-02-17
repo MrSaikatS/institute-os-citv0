@@ -38,8 +38,8 @@ model User {
   accounts       Account[]
   studentProfile StudentProfile?
 
-  role       Role
-  banned     Boolean?  @default(false)
+  role       Role      @default(STUDENT)
+  banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
 
