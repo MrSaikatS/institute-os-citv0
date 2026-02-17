@@ -1,0 +1,31 @@
+import z from "zod";
+
+export const loginFormSchema = z.object({
+  email: z.email({ error: "Invalid email address" }),
+  password: z
+    .string()
+    .min(8, { error: "Password must be minimum 8 characters long" }),
+  rememberMe: z.boolean(),
+});
+
+export type LoginFormType = z.infer<typeof loginFormSchema>;
+
+export const registerFormSchema = z
+  .object({
+    name: z
+      .string()
+      .min(2, { error: "Name must be minimum 2 characters long" }),
+    email: z.email({ error: "Invalid email address" }),
+    password: z
+      .string()
+      .min(8, { error: "Password must be minimum 8 characters long" }),
+    confirmPassword: z
+      .string()
+      .min(1, { error: "Please confirm your password" }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    error: "Password didn't match",
+    path: ["confirmPassword"],
+  });
+
+export type RegisterFormType = z.infer<typeof registerFormSchema>;

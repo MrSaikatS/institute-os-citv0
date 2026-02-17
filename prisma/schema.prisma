@@ -10,3 +10,106 @@ generator client {
 datasource db {
   provider = "sqlite"
 }
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+  COMPLETED
+  DROPPED
+}
+
+enum Role {
+  HO
+  INCHARGE
+  TEACHER
+  STUDENT
+}
+
+model User {
+  id             String          @id @default(uuid())
+  name           String
+  email          String
+  emailVerified  Boolean         @default(false)
+  image          String?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  sessions       Session[]
+  accounts       Account[]
+  studentProfile StudentProfile?
+
+  role       Role      @default(STUDENT)
+  banned     Boolean   @default(false)
+  banReason  String?
+  banExpires DateTime?
+
+  @@unique([email])
+  @@index([createdAt])
+  @@index([role])
+  @@map("user")
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  expiresAt DateTime
+  token     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  impersonatedBy String?
+
+  @@unique([token])
+  @@index([userId])
+  @@index([expiresAt])
+  @@index([createdAt])
+  @@map("session")
+}
+
+model Account {
+  id                    String    @id @default(uuid())
+  accountId             String
+  providerId            String
+  userId                String
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken           String?
+  refreshToken          String?
+  idToken               String?
+  accessTokenExpiresAt  DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope                 String?
+  password              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([providerId, accountId])
+  @@index([userId])
+  @@map("account")
+}
+
+model Verification {
+  id         String   @id @default(uuid())
+  identifier String
+  value      String
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([identifier])
+  @@index([expiresAt])
+  @@map("verification")
+}
+
+model StudentProfile {
+  id     String        @id @default(uuid())
+  userId String
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status StudentStatus @default(INACTIVE)
+
+  @@unique([userId])
+  @@index([status])
+  @@map("student_profile")
+}
