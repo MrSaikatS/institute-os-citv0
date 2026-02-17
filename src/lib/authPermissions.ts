@@ -9,10 +9,6 @@ const statement = {
 
 export const customAc = createAccessControl(statement);
 
-// export const administrator = customAc.newRole({
-//   course: ["create", "read", "update", "delete"],
-// });
-
 export const ho = customAc.newRole({
   course: ["create", "read", "update", "delete"],
 });

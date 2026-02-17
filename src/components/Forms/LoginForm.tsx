@@ -31,15 +31,23 @@ const LoginForm = () => {
   });
 
   const loginFormHandler = async (loginData: LoginFormType) => {
-    const { error, data } = await authClient.signIn.email(loginData);
+    try {
+      const { error } = await authClient.signIn.email(loginData);
 
-    if (error && data === null) {
-      toast.error(error.message);
-    } else {
-      toast.success("Login successful!");
-      reset();
-
-      replace("/account");
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Login successful!");
+        reset();
+        replace("/account");
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error ?
+          err.message
+        : "Something went wrong. Please try again.",
+      );
+      console.error(err);
     }
   };
 

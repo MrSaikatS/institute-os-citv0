@@ -35,20 +35,29 @@ const RegisterForm = () => {
     email,
     password,
   }: RegisterFormType) => {
-    const { error } = await authClient.signUp.email({
-      name,
-      email,
-      password,
-    });
+    try {
+      const { error } = await authClient.signUp.email({
+        name,
+        email,
+        password,
+      });
 
-    if (error) {
-      toast.error(error.message);
-    } else {
-      toast.success("Registration successful!");
+      if (error) {
+        toast.error(error.message);
+      } else {
+        toast.success("Registration successful!");
 
-      reset();
+        reset();
 
-      replace("/");
+        replace("/account");
+      }
+    } catch (err) {
+      toast.error(
+        err instanceof Error ?
+          err.message
+        : "Something went wrong. Please try again.",
+      );
+      console.error(err);
     }
   };
 
