@@ -116,12 +116,31 @@ model Verification {
 }
 
 model StudentProfile {
-  id              String        @id @default(uuid()) // Primary key
-  status          StudentStatus @default(INACTIVE) // Student enrollment status
-  officialName    String // Official/legal name
-  occupation      String // Current occupation
-  guardianName    String // Guardian's name
-  sourcesOfIncome String // Sources of income
+  id                     String        @id @default(uuid()) // Primary key
+  status                 StudentStatus @default(INACTIVE) // Student enrollment status
+  officialName           String // Official/legal name
+  occupation             String // Current occupation
+  guardianName           String // Guardian's name
+  sourcesOfIncome        String // Sources of income
+  sourcesOfIncomeDetails String // Sources of income details
+  fathersName            String // Father's name
+  fathersOccupation      String // Father's occupation
+  mothersName            String // Mother's name
+  mothersOccupation      String // Mother's occupation
+  dateOfBirth            DateTime // Date of birth
+  lastQualification      String // Last qualification
+  otherQualification     String? // Other qualification
+  address                String // Address
+  landmark               String // Landmark
+  postOffice             String // Post office
+  pinCode                String // Pin code
+  district               String // District
+  state                  String // State
+  gender                 String // Gender
+  religion               String // Religion
+  category               String // Category
+  branch                 String // Branch
+  aadharNumber           String // Aadhar number
 
   // Relations
   userId String
