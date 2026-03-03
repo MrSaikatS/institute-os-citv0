@@ -14,14 +14,6 @@
 - **Image Processing**: Sharp
 - **Password Hashing**: @node-rs/argon2
 
-## Database Schema
-
-- **User**: Core user model with roles (HO, INCHARGE, TEACHER, STUDENT), email verification, ban management
-- **Session**: Authentication sessions with IP tracking
-- **Account**: OAuth and credential accounts
-- **Verification**: Email verification tokens
-- **StudentProfile**: Student-specific data with status tracking (ACTIVE, INACTIVE, SUSPENDED, COMPLETED, DROPPED)
-
 ## Project Structure
 
 ```
@@ -51,12 +43,3 @@ src/
     ├── zodSchema.ts            # Zod validation schemas
     └── argon2.ts               # Password hashing utilities
 ```
-
-## Configuration Files
-
-- **prisma/schema.prisma**: Database schema definition
-- **tailwind.config.js**: Tailwind CSS configuration
-- **next.config.ts**: Next.js configuration
-- **components.json**: shadcn/ui configuration
-- **eslint.config.mjs**: ESLint configuration
-- **tsconfig.json**: TypeScript configuration
