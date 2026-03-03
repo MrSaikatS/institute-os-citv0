@@ -1,338 +1,212 @@
-# plan.md — institute-os-citv0 (Next.js 16 App Router)
+# plan.md — institute-os-citv0 (Single institute, multi-branch)
 
-This repo will become a multi-branch Institute Management System that replaces the institute’s Excel workflow (`New-System-27.xlsx`) with a secure web app. The Excel contains operational “tables” like Visitor leads, Admission profiles (Admission Unique ID), Deals/Installments (Month+Amount columns), Fees Year (tiered fee plan), Syllabus (Sem/Type/Course/Subject/Topic/Amount), teacher schedule/links, receipts, expenses, attendance, videos, quizzes, projects, verbal exams, reviews, examiner checklist, kits issue, and admission letter requests. [file:16]
+Institute Management System (IMS) with:
 
-Tech stack (fixed): Next.js 16 App Router + React 19 + TypeScript, Tailwind CSS v4 + shadcn/ui, Prisma v7 + SQLite, Better Auth, React Hook Form + Zod, React Toastify, Sharp, @node-rs/argon2. [file:16]
+- Student management
+- Teacher management
+- Learning management (LMS)
+- Accounts (fees, invoices, payments, expenses)
+- Branch management
+
+Stack (fixed): Next.js 16 App Router + React 19 + TS, Tailwind v4 + shadcn/ui, Prisma v7 + SQLite, Better Auth, RHF + Zod, React Toastify, Sharp, @node-rs/argon2.
 
 ---
 
-## 1) Repo-specific conventions (current structure)
+## 1) Current repo structure (keep)
 
-Current route groups:
+- Auth routes: `src/app/(auth)/*`
+- Protected area: `src/app/(application)/*` (use this for all IMS modules)
+- APIs: `src/app/api/*` (use for upload/import/report downloads if needed)
+- Server actions: `src/server/actions/*`
+- Existing auth libs: `src/lib/auth.ts`, `src/lib/auth-client.ts`, `src/lib/authPermissions.ts`, `src/lib/argon2.ts`
+- UI: shadcn components under `src/components/shadcnui/*`, internal components under `src/components/*`
 
-- `src/app/(auth)/*` for login/register/reset-password
-- `src/app/(application)/*` for authenticated pages (dashboard, account settings, etc.)
-- `src/app/api/*` for API routes (auth, users, upload, health)
-
-Existing libraries:
-
-- `src/lib/auth.ts`, `src/lib/auth-client.ts`, `src/lib/authPermissions.ts`, `src/lib/argon2.ts`
-- `src/server/actions/*` for server actions (auth, user, upload)
-- Shared form patterns exist under `src/components/Forms/*` + shadcn under `src/components/shadcnui/*`
-
-**Decision**: Keep using `(application)` as the protected area and add new modules under it:
-
-- `src/app/(application)/students`
-- `src/app/(application)/leads`
-- `src/app/(application)/fees`
-- `src/app/(application)/deals`
-- `src/app/(application)/receipts`
-- `src/app/(application)/expenses`
-- `src/app/(application)/syllabus`
-- `src/app/(application)/teachers`
-- `src/app/(application)/attendance`
-- `src/app/(application)/learning`
-- `src/app/(application)/import`
+Decision: keep `(application)` layout and add modules beneath it.
 
 ---
 
 ## 2) Definition of Done (v1)
 
-- Import `New-System-27.xlsx` idempotently (re-import doesn’t duplicate). [file:16]
-- RBAC + Branch scoping enforced server-side for every business query/mutation. [file:16]
-- Search student by **Admission Unique ID** and see: profile + docs URLs + branch + course/tier/sem + syllabus + teacher schedule + installments + receipts + dues + attendance + assessments + kits + videos. [file:16]
-- Finance is audit-safe: receipts/expenses/adjustments are append-only (reversals instead of overwrites). [file:16]
-- Export (CSV first): receipts, expenses, dues list (branch + date range). [file:16]
+- Multi-branch:
+  - Every business record includes `branchId`.
+  - Every read/write is branch-scoped server-side.
+- RBAC:
+  - Permissions enforced server-side (server actions + route handlers).
+- Student lifecycle:
+  - Student → enrollment in course/batch → attendance → assessments → completion/drop.
+- Accounts:
+  - Fee plan → invoice/dues → payments/receipts → refunds/adjustments.
+  - Audit-safe: avoid deleting finance history; use adjustments/reversals.
+- LMS:
+  - Courses + syllabus/topics + content + assignments/quizzes + submissions.
+- Reports:
+  - Dues list, collections by date range, expenses by date range, attendance report.
+- Export:
+  - CSV export for receipts/expenses/dues.
 
 ---
 
-## 3) Milestones & tasks (PR-by-PR)
+## 3) Roles & access model
+
+Single institute, multi-branch. Roles:
+
+- SUPER_ADMIN (all branches)
+- BRANCH_ADMIN (one branch)
+- ACCOUNTANT (finance + reports within branch)
+- ACADEMIC_MANAGER (courses/syllabus/batches/teachers; read-only finance)
+- TEACHER (assigned batches, attendance, assessments)
+- STUDENT/GUARDIAN (portal)
+- AUDITOR (read-only)
+
+Rule: Branch is enforced by:
+
+- `User.branchId` (default branch) + optional `UserBranchAccess` for multi-branch staff later.
+- Guards must be used in every server action / API handler.
+
+---
+
+## 4) Milestones (PR-by-PR)
 
 ### Milestone 0 — Baseline hardening (PR #1)
 
-- [ ] Add `docs/ARCHITECTURE.md` (1 page: modules, RBAC, branch scoping, import flow)
-- [ ] Add `src/lib/db.ts` Prisma client singleton (don’t use custom db layer for new code; keep old untouched)
-- [ ] Add `src/lib/money.ts` helpers (`toPaise`, `fromPaise`, formatting)
-- [ ] Add global toast provider (if not already consistent across app)
-- [ ] Add `src/lib/validators/` folder and move/alias existing zod schemas to it
+- [ ] Add Prisma singleton: `src/lib/db.ts`
+- [ ] Add validators folder: `src/lib/validators/*` (Zod schemas)
+- [ ] Add money helper: `src/lib/money.ts` (integer paise)
+- [ ] Standardize toast usage (React Toastify)
+- [ ] Add `docs/ARCHITECTURE.md` (1 page: modules + branch scoping + RBAC strategy)
 
-Acceptance:
-
-- Build passes CI, no functional changes.
+Acceptance: no functional changes; new scaffolding ready.
 
 ---
 
-### Milestone 1 — Org/Branch/RBAC foundation (PR #2)
+### Milestone 1 — Branch + RBAC foundation (PR #2)
 
-**Why**: Excel Admission sheet includes `Branch`, so multi-branch is mandatory. [file:16]
+Prisma:
 
-- [ ] Prisma schema update: `Organization`, `Branch`, `UserBranchAccess`, `AuditLog`
-- [ ] Add role enum (or Role table), include: SUPER_ADMIN, BRANCH_ADMIN, ACCOUNTANT, ACADEMIC_MANAGER, TEACHER, STUDENT, GUARDIAN, AUDITOR
-- [ ] Add server-side guards in `src/lib/auth/guards.ts`:
+- [ ] `Branch` table (name/code/address/status)
+- [ ] Extend `User` with `role` and `branchId` (default)
+- [ ] Optional: `UserBranchAccess` (future-proof staff who work in multiple branches)
+- [ ] `AuditLog` table for sensitive mutations (especially finance)
+
+Auth:
+
+- [ ] Better Auth integration remains the base for sessions (don’t replace). (See Better Auth Next.js integration docs.)
+- [ ] Implement guards in `src/lib/auth/guards.ts`:
   - `requireSession()`
   - `requireRole(roles)`
-  - `requireBranchAccess(branchId)`
-- [ ] Update existing dashboard page `src/app/(application)/dashboard` to show branch-aware stats placeholder
+  - `requireBranchAccess(branchId)` (SUPER_ADMIN bypass)
 
-Acceptance:
-
-- SUPER_ADMIN can access all branches, BRANCH_ADMIN restricted to one branch.
+Acceptance: branch scoping works for all newly added pages/actions.
 
 ---
 
-### Milestone 2 — Admissions core (PR #3–#4)
+### Milestone 2 — Students + enrollments (PR #3–#4)
 
-**Excel mapping**:
+PR #3: Student master
 
-- Visitor sheet → leads
-- Admission sheet → student master with `Admission Unique ID` and document/photo URLs [file:16]
-
-PR #3: Leads
-
-- [ ] Prisma: `VisitorLead` (branchId + lead fields)
+- [ ] Prisma: `Student`, `Guardian` (optional), `StudentDocument`
 - [ ] Pages:
-  - `src/app/(application)/leads/page.tsx` list + filters
-  - `Convert to admission` action → creates Student draft
-- [ ] Server actions in `src/server/actions/leads.ts`
+  - `src/app/(application)/students/page.tsx` (list/filter)
+  - `src/app/(application)/students/[id]/page.tsx` (detail)
+- [ ] Forms: RHF + Zod + server actions (double-validate)
 
-PR #4: Students
+PR #4: Enrollment
 
-- [ ] Prisma: `Student`, `StudentDocument`
-  - `admissionUniqueId` UNIQUE (business key) [file:16]
-  - address fields (district/state/pincode/etc) [file:16]
+- [ ] Prisma: `Course`, `Batch`, `Enrollment`
+- [ ] Enroll a student into a batch (branch-scoped)
+
+Acceptance: student created + enrolled and visible in batch roster.
+
+---
+
+### Milestone 3 — Teacher + academic structure (PR #5–#6)
+
+- [ ] Prisma: `Teacher`, `TeacherAssignment` (teacher ↔ batch ↔ subject/topic scope)
 - [ ] Pages:
-  - `src/app/(application)/students/page.tsx`
-  - `src/app/(application)/students/[admissionUniqueId]/page.tsx`
-- [ ] Search everywhere by Admission Unique ID [file:16]
-- [ ] RHF+Zod forms for create/edit Student
+  - `src/app/(application)/teachers/*`
+  - `src/app/(application)/batches/*` (rosters + teacher assignments)
+- [ ] Syllabus model:
+  - `SyllabusTopic` with ordering, type (theory/practical), optional duration
 
-Acceptance:
-
-- Create a student manually and open details by Admission Unique ID.
+Acceptance: academic manager can configure batches, teachers, syllabus.
 
 ---
 
-### Milestone 3 — Courses, Fee Plans, Deals (PR #5–#7)
+### Milestone 4 — Accounts (PR #7–#10)
 
-**Excel mapping**:
+Prisma (minimum):
 
-- Fees Year sheet (year + course + Premium/Affordable/Standard/Normal totals) [file:16]
-- Deal sheet (Admission Unique ID + CourseTrade + Month/Amount columns) [file:16]
+- [ ] `FeePlan` (per course/batch + total + optional installment template)
+- [ ] `Invoice`, `InvoiceLine`
+- [ ] `Payment` (receipt)
+- [ ] `PaymentAllocation` (payment → invoice/lines)
+- [ ] `Expense`
+- [ ] `FinanceAdjustment` (for corrections; keep history)
 
-PR #5: Course & fee plan
+Rules:
 
-- [ ] Prisma: `CourseTrade`, `CourseProgram`, `FeePlanYear`, `FeePlan`
-- [ ] Pages under `(application)/fees`:
-  - `fee-plans` list + create year + tier totals
+- [ ] Money in paise only
+- [ ] No hard deletes for receipts/payments; corrections via adjustments/reversals
+- [ ] AuditLog all finance mutations
 
-PR #6: Deals (installments)
+Pages:
 
-- [ ] Prisma: `DealPlan`, `DealInstallment`
-- [ ] UI: create deal for a student, add installments
-- [ ] Validation: amounts numeric, dueDate valid, allow 0 but warn (Excel contains 0 amounts) [file:16]
+- [ ] `src/app/(application)/fees/*` (fee plans)
+- [ ] `src/app/(application)/invoices/*`
+- [ ] `src/app/(application)/payments/*`
+- [ ] `src/app/(application)/expenses/*`
+- [ ] `src/app/(application)/reports/*` (basic)
 
-PR #7: Due engine v1
-
-- [ ] Implement due calculation helpers:
-  - total due = sum(installments)
-  - paid = sum(receipt allocations)
-  - remaining per installment
-- [ ] Show “Dues” section on student details page
-
-Acceptance:
-
-- Student page shows installment schedule and totals.
+Acceptance: accountant can generate invoices, record payments, see dues.
 
 ---
 
-### Milestone 4 — Receipts, Expenses, Ledger (PR #8–#10)
+### Milestone 5 — Attendance + assessments (PR #11–#12)
 
-**Excel mapping**:
+- [ ] Prisma: `ClassSession`, `StudentAttendance`
+- [ ] Prisma: `Assignment`, `Submission`, `Quiz`, `QuizAttempt`, `Marks`
+- [ ] Pages under:
+  - `src/app/(application)/attendance/*`
+  - `src/app/(application)/assessments/*`
 
-- Receipt sheet, Exp sheet (expenses) [file:16]
-
-PR #8: Finance tables
-
-- [ ] Prisma: `Receipt`, `Expense`, `LedgerEntry`, `ReceiptAllocation`
-- [ ] Money stored as integer paise (`amountPaise`) everywhere
-
-PR #9: Receipts UI
-
-- [ ] Pages:
-  - `src/app/(application)/receipts/page.tsx` list/filter
-  - `src/app/(application)/receipts/new` create form
-  - `src/app/(application)/receipts/[id]/print` print-friendly
-- [ ] Allocation rule: allocate to oldest unpaid installment first
-- [ ] AuditLog every create/update attempt; updates should create reversal entries
-
-PR #10: Expenses UI
-
-- [ ] Pages:
-  - `src/app/(application)/expenses/page.tsx`
-  - `src/app/(application)/expenses/new`
-
-Acceptance:
-
-- Record receipt and see dues reduce; record expense; daily totals visible on dashboard.
+Acceptance: teacher can record attendance and marks; student can view.
 
 ---
 
-### Milestone 5 — Syllabus + Teachers/Schedule (PR #11–#12)
+### Milestone 6 — LMS content + progress (PR #13)
 
-**Excel mapping**:
+- [ ] `ContentUnit` per syllabus topic (link/file/text)
+- [ ] Progress computation per enrollment
 
-- Syllabus sheet: Sem, Type, Course Trade, Course Name, Subject, Topic, Amount [file:16]
-- Teacher sheet: assignment + class links + labs + day/time [file:16]
-
-PR #11: Syllabus
-
-- [ ] Prisma: `SyllabusItem` (+ ordering)
-- [ ] Page: `src/app/(application)/syllabus/page.tsx`
-  - filters: courseTrade, courseName, sem, type
-  - show Topic + Amount metadata [file:16]
-
-PR #12: Teachers + schedule
-
-- [ ] Prisma: `Teacher`, `TeacherAssignment`, `ClassLink` (optional normalized table)
-- [ ] Page: `src/app/(application)/teachers/page.tsx`
-- [ ] Show teacher schedule section on student detail (based on course/sem)
-
-Acceptance:
-
-- Browse syllabus per course and see teacher schedule/links.
+Acceptance: LMS content visible and progress shown per student.
 
 ---
 
-### Milestone 6 — Attendance + Learning artifacts (PR #13–#15)
+### Milestone 7 — Exports + polish (PR #14)
 
-**Excel mapping**:
+- [ ] CSV export endpoints for receipts/expenses/dues (branch + date range)
+- [ ] Pagination + server filtering on all lists
+- [ ] Tests:
+  - allocation logic (invoice/payments)
+  - branch guard behaviors
 
-- Staff attendance logs with login/logout + photo URL [file:16]
-- Student class attendance with rating/opinion/suggestion [file:16]
-- Videos, quiz, project, verbal exam sheets [file:16]
-
-PR #13: Attendance
-
-- [ ] Prisma: `StaffAttendanceLog`, `StudentClassAttendance`
-- [ ] Page: `src/app/(application)/attendance/page.tsx`
-- [ ] Teacher can add class attendance entries; branch/admin can view reports
-
-PR #14: Videos
-
-- [ ] Prisma: `VideoLink`
-- [ ] Page: `src/app/(application)/learning/videos`
-
-PR #15: Assessments
-
-- [ ] Prisma: `TheoryQuiz`, `ProjectSubmission`, `VerbalExam`
-- [ ] Pages: `src/app/(application)/learning/*`
-
-Acceptance:
-
-- Student detail page shows attendance + learning entries.
+Acceptance: reports/export reliable.
 
 ---
 
-### Milestone 7 — Ops & quality modules (PR #16–#17)
+## 5) UI approach (shadcn)
 
-**Excel mapping**:
+- Use shadcn DataTable pattern for all lists (server-side filtering/pagination).
+- Use shadcn Dialog/Sheet for create/edit flows.
+- Keep state in URL query params for tables when possible.
 
-- Kits issue, student reviews, examiner checklist, admission letter requests [file:16]
-
-- [ ] Prisma: `KitIssue`, `StudentReview`, `ExaminerChecklist`, `AdmissionLetterRequest`
-- [ ] Pages:
-  - `src/app/(application)/kits`
-  - `src/app/(application)/reviews`
-  - `src/app/(application)/examiner-checklist`
-  - `src/app/(application)/admission-letters`
-
-Acceptance:
-
-- Staff can record these workflows and filter by branch/course/student. [file:16]
+(Reference: shadcn Data Table guide.)
 
 ---
 
-### Milestone 8 — Excel import wizard (PR #18–#19)
+## 6) Non-negotiables
 
-This is the highest leverage feature because the institute already works inside Excel. [file:16]
-
-PR #18: Import backend
-
-- [ ] Add `/src/app/api/import/excel/route.ts` (multipart upload)
-- [ ] Add Prisma: `ImportRun`, `ImportError`
-- [ ] Implement parsers per sheet:
-  - Visitor → VisitorLead [file:16]
-  - Admission → Student + StudentDocument [file:16]
-  - Fees Year → FeePlanYear + FeePlan [file:16]
-  - Deal → DealPlan + DealInstallment [file:16]
-  - Syllabus → SyllabusItem [file:16]
-  - (later) Receipt/Expense/Attendance/Videos/etc
-
-PR #19: Import UI
-
-- [ ] `src/app/(application)/import/page.tsx` wizard:
-  - upload
-  - preview: counts + first N rows
-  - import
-  - show row-level errors
-
-Idempotency (must):
-
-- Student upsert by `admissionUniqueId` [file:16]
-- FeePlan upsert by `(year, courseName, tier)`
-- SyllabusItem upsert by `(sem, type, courseTrade, courseName, subject, topic)` [file:16]
-- DealInstallment upsert by `(student, courseTrade, dueDate, amountPaise)` [file:16]
-
-Acceptance:
-
-- Import Excel twice → row counts stable, no duplicates.
-
----
-
-### Milestone 9 — Reporting + exports + polish (PR #20)
-
-- [ ] CSV exports:
-  - receipts by branch + date range
-  - expenses by branch + date range
-  - dues list
-- [ ] Add pagination + server-side filters to all list pages
-- [ ] Ensure branch scoping on exports too
-- [ ] Add basic unit tests for allocation + due logic (Vitest/Jest)
-
-Acceptance:
-
-- Admin can get branch-wise finance exports and dues reports. [file:16]
-
----
-
-## 4) Page map (final v1)
-
-Under `src/app/(application)/`:
-
-- `dashboard`
-- `leads`
-- `students`
-- `students/[admissionUniqueId]`
-- `fees` (or `fee-plans`)
-- `deals`
-- `receipts`
-- `expenses`
-- `syllabus`
-- `teachers`
-- `attendance`
-- `learning/videos`, `learning/quizzes`, `learning/projects`, `learning/verbal`
-- `kits`
-- `reviews`
-- `examiner-checklist`
-- `admission-letters`
-- `import`
-
----
-
-## 5) Non-negotiable rules
-
-- Money stored as integer paise (`amountPaise`), never float.
-- “Admission Unique ID” is the global business identifier and must be searchable everywhere. [file:16]
-- No direct DB calls from client components.
-- Every mutation must validate with Zod server-side and enforce RBAC + branch scope. [file:16]
-- Finance changes must be append-only with reversal entries; never silently edit historical receipts/expenses. [file:16]
+- Branch scoping enforced server-side everywhere.
+- RHF+Zod on client and Zod re-validation on server.
+- Finance history is append-only; avoid mutating past payments silently.
+- Keep schema portable (SQLite now, Postgres later).
