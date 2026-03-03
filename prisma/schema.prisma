@@ -4,7 +4,7 @@
 generator client {
   provider = "prisma-client"
   output   = "../generated/prisma"
-  runtime  = "nodejs"
+  // runtime  = "nodejs"
 }
 
 datasource db {
@@ -27,22 +27,26 @@ enum Role {
 }
 
 model User {
-  id             String          @id @default(uuid())
-  name           String
-  email          String
-  emailVerified  Boolean         @default(false)
-  image          String?
-  createdAt      DateTime        @default(now())
-  updatedAt      DateTime        @updatedAt
+  id            String   @id @default(uuid()) // Primary key
+  name          String // User's full name
+  email         String // User's email address
+  emailVerified Boolean  @default(false) // Whether email is verified
+  image         String? // Profile image URL
+  createdAt     DateTime @default(now()) // Account creation timestamp
+  updatedAt     DateTime @updatedAt // Last update timestamp
+
+  // Relations
   sessions       Session[]
   accounts       Account[]
   studentProfile StudentProfile?
 
+  // Access Control
   role       Role      @default(STUDENT)
   banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
 
+  // Attributes
   @@unique([email])
   @@index([createdAt])
   @@index([role])
@@ -50,18 +54,22 @@ model User {
 }
 
 model Session {
-  id        String   @id @default(uuid())
-  expiresAt DateTime
-  token     String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  ipAddress String?
-  userAgent String?
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id        String   @id @default(uuid()) // Primary key
+  expiresAt DateTime // Session expiration time
+  token     String // Session authentication token
+  createdAt DateTime @default(now()) // Session creation time
+  updatedAt DateTime @updatedAt // Last update time
+  ipAddress String? // IP address of the session
+  userAgent String? // Browser/client user agent
 
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Access Control
   impersonatedBy String?
 
+  // Attributes
   @@unique([token])
   @@index([userId])
   @@index([expiresAt])
@@ -70,46 +78,71 @@ model Session {
 }
 
 model Account {
-  id                    String    @id @default(uuid())
-  accountId             String
-  providerId            String
-  userId                String
-  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  accessToken           String?
-  refreshToken          String?
-  idToken               String?
-  accessTokenExpiresAt  DateTime?
-  refreshTokenExpiresAt DateTime?
-  scope                 String?
-  password              String?
-  createdAt             DateTime  @default(now())
-  updatedAt             DateTime  @updatedAt
+  id                    String    @id @default(uuid()) // Primary key
+  accountId             String // OAuth account identifier
+  providerId            String // OAuth provider identifier
+  accessToken           String? // OAuth access token
+  refreshToken          String? // OAuth refresh token
+  idToken               String? // OAuth ID token
+  accessTokenExpiresAt  DateTime? // Access token expiration time
+  refreshTokenExpiresAt DateTime? // Refresh token expiration time
+  scope                 String? // OAuth granted scopes
+  password              String? // Hashed password for credential auth
+  createdAt             DateTime  @default(now()) // Account creation time
+  updatedAt             DateTime  @updatedAt // Last update time
 
+  // Relations
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  // Attributes
   @@unique([providerId, accountId])
   @@index([userId])
   @@map("account")
 }
 
 model Verification {
-  id         String   @id @default(uuid())
-  identifier String
-  value      String
-  expiresAt  DateTime
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id         String   @id @default(uuid()) // Primary key
+  identifier String // Verification identifier (email/phone)
+  value      String // Verification code or token
+  expiresAt  DateTime // Verification expiration time
+  createdAt  DateTime @default(now()) // Verification creation time
+  updatedAt  DateTime @updatedAt // Last update time
 
+  // Attributes
   @@index([identifier])
   @@index([expiresAt])
   @@map("verification")
 }
 
 model StudentProfile {
-  id     String        @id @default(uuid())
-  userId String
-  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status StudentStatus @default(INACTIVE)
+  id              String        @id @default(uuid()) // Primary key
+  status          StudentStatus @default(INACTIVE) // Student enrollment status
+  officialName    String // Official/legal name
+  occupation      String // Current occupation
+  guardianName    String // Guardian's name
+  sourcesOfIncome String // Sources of income
 
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Attributes
   @@unique([userId])
   @@index([status])
   @@map("student_profile")
+}
+
+model Visitor {
+  id                String   @id @default(uuid()) // Primary key
+  candidateName     String // Visitor's full name
+  candidatePhone    String // Phone number
+  candidateWhatsApp String? // WhatsApp number
+  candidateEmail    String? // Email address
+  source            String // How they heard about us
+  createdAt         DateTime @default(now()) // Record creation time
+  updatedAt         DateTime @updatedAt // Last update time
+
+  // Attributes
+  @@map("visitor")
 }
