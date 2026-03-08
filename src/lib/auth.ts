@@ -16,17 +16,16 @@ export const auth = betterAuth({
     serverEnv.BETTER_AUTH_ALLOWED_ORIGINS?.split(",").filter(Boolean),
 
   database: prismaAdapter(prisma, {
-    provider: "postgresql",
-    transaction: true,
+    provider: "sqlite",
   }),
 
   plugins: [
     nextCookies(),
     adminPlugin({
       ac: customAc,
-      defaultRole: "student",
-      adminRoles: ["ho"],
-      roles: { ho, incharge, teacher, student },
+      defaultRole: "STUDENT",
+      adminRoles: ["HO"],
+      roles: { HO: ho, INCHARGE: incharge, TEACHER: teacher, STUDENT: student },
     }),
   ],
 
