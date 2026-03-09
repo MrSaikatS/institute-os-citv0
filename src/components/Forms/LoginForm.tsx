@@ -32,7 +32,7 @@ const LoginForm = () => {
 
   const loginFormHandler = async (loginData: LoginFormType) => {
     try {
-      const { error } = await authClient.signIn.email(loginData);
+      const { error, data } = await authClient.signIn.email(loginData);
 
       if (error) {
         toast.error(error.message);
@@ -40,6 +40,16 @@ const LoginForm = () => {
         toast.success("Login successful!");
         reset();
         replace("/account");
+      }
+
+      if (data) {
+        const {
+          user: { role },
+        } = data;
+
+        if (role === "student") {
+          replace("/account");
+        }
       }
     } catch (err) {
       toast.error(
