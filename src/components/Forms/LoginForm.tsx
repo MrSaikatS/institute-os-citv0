@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { loginFormSchema, LoginFormType } from "@/lib/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon, LockIcon } from "lucide-react";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -39,7 +40,6 @@ const LoginForm = () => {
       } else {
         toast.success("Login successful!");
         reset();
-        replace("/account");
       }
 
       if (data) {
@@ -47,8 +47,10 @@ const LoginForm = () => {
           user: { role },
         } = data;
 
-        if (role === "student") {
-          replace("/account");
+        if (role) {
+          replace(`/${role.toLowerCase()}` as Route);
+        } else {
+          replace("/account" as Route);
         }
       }
     } catch (err) {
