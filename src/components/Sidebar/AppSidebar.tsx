@@ -48,7 +48,21 @@ const AppSidebar = ({ role = "account" }: AppSidebarProps) => {
           <div className="text-muted-foreground p-4 text-sm">Teacher Menu</div>
         )}
         {role === "incharge" && (
-          <div className="text-muted-foreground p-4 text-sm">Incharge Menu</div>
+          <div className="flex flex-col gap-2 p-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <a
+                      href="/incharge"
+                      className="flex items-center gap-2">
+                      <span>Student Management</span>
+                    </a>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
         )}
         {role === "ho" && (
           <div className="text-muted-foreground p-4 text-sm">HO Menu</div>
