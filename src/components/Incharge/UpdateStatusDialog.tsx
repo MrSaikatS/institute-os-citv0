@@ -40,7 +40,9 @@ export const UpdateStatusDialog = ({
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
-  const handleUpdate = async () => {
+  const maxRetries = 3;
+
+  const handleUpdate = async (currentRetryCount = 0) => {
     setIsPending(true);
 
     try {
@@ -70,10 +72,6 @@ export const UpdateStatusDialog = ({
             case "INVALID_INPUT":
               errorMessage =
                 "Invalid student ID provided. Please refresh the page.";
-              break;
-
-            case "INVALID_STATUS":
-              errorMessage = "Invalid status selected. Please try again.";
               break;
 
             case "CONNECTION_FAILED":
@@ -122,18 +120,23 @@ export const UpdateStatusDialog = ({
             "TRANSACTION_CONFLICT",
             "CONNECTION_POOL_TIMEOUT",
             "TIMEOUT_ERROR",
-          ].includes(response.code)
+          ].includes(response.code) &&
+          currentRetryCount < maxRetries
         ) {
+          const nextRetryCount = currentRetryCount + 1;
+
           setTimeout(() => {
-            toast.info("Retrying update...");
-            handleUpdate();
+            toast.info(`Retrying update... (${nextRetryCount}/${maxRetries})`);
+            handleUpdate(nextRetryCount);
           }, 2000);
+        } else {
+          // Only set pending to false when we're not retrying
+          setIsPending(false);
         }
       }
     } catch (error) {
       console.error("Failed to update status:", error);
       toast.error("An unexpected error occurred while updating status");
-    } finally {
       setIsPending(false);
     }
   };
@@ -175,7 +178,7 @@ export const UpdateStatusDialog = ({
             Cancel
           </Button>
           <Button
-            onClick={handleUpdate}
+            onClick={() => handleUpdate()}
             disabled={isPending}>
             {isPending ? "Updating..." : "Confirm Update"}
           </Button>

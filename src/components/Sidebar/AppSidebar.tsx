@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/shadcnui/sidebar";
 import Image from "next/image";
+import Link from "next/link";
 
 type AppSidebarProps = {
   role?: "ho" | "incharge" | "teacher" | "student" | "account";
@@ -53,11 +54,11 @@ const AppSidebar = ({ role = "account" }: AppSidebarProps) => {
               <SidebarMenuItem>
                 <SidebarMenuButton
                   render={
-                    <a
+                    <Link
                       href="/incharge"
                       className="flex items-center gap-2">
                       <span>Student Management</span>
-                    </a>
+                    </Link>
                   }
                 />
               </SidebarMenuItem>

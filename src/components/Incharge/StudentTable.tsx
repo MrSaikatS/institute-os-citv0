@@ -8,19 +8,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/shadcnui/table";
-import { StudentStatus } from "../../../generated/prisma/client";
+import type { getStudentsForIncharge } from "@/server/student";
 import { StatusBadge } from "./StatusBadge";
 import { UpdateStatusDialog } from "./UpdateStatusDialog";
 
-interface StudentWithProfile {
-  id: string;
-  name: string;
-  email: string;
-  studentProfile: {
-    status: StudentStatus;
-    branch: string;
-  } | null;
-}
+type StudentWithProfile = NonNullable<
+  Awaited<ReturnType<typeof getStudentsForIncharge>>["data"]
+>[0];
 
 interface StudentTableProps {
   students: StudentWithProfile[];

@@ -9,10 +9,12 @@ const MOBILE_BREAKPOINT = 768;
 /**
  * Custom React hook to detect if the current viewport is mobile-sized.
  *
- * This hook uses a MediaQueryList to listen for window resize events and
- * determines if the screen width is below the mobile breakpoint (768px).
- * It automatically updates when the window is resized and properly cleans
- * up event listeners on unmount.
+ * This hook uses a MediaQueryList and listens for the media query "change" event
+ * (via MediaQueryList.addEventListener("change", ...)) instead of subscribing to
+ * window resize events. It determines if the screen width is below the mobile
+ * breakpoint (768px) and updates when the media query match state changes.
+ * The hook properly cleans up the MediaQueryList listener on unmount
+ * (via MediaQueryList.removeEventListener("change", ...)).
  *
  * @returns {boolean} True if the current viewport width is less than 768px, false otherwise
  *
@@ -29,6 +31,7 @@ const MOBILE_BREAKPOINT = 768;
  * }
  * ```
  */
+
 export function useIsMobile() {
   const [isMobile, setIsMobile] = React.useState<boolean | undefined>(
     undefined,
@@ -37,10 +40,10 @@ export function useIsMobile() {
   React.useEffect(() => {
     const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`);
     const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+      setIsMobile(mql.matches);
     };
     mql.addEventListener("change", onChange);
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT);
+    setIsMobile(mql.matches);
     return () => mql.removeEventListener("change", onChange);
   }, []);
 

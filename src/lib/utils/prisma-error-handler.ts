@@ -51,8 +51,23 @@ export const handlePrismaError = (error: unknown): PrismaOperationError => {
     return error;
   }
 
-  if (error && typeof error === "object" && "code" in error) {
-    const prismaError = error as { code: string; message?: string };
+  // Handle Prisma known request errors with explicit type guard
+  if (
+    error &&
+    typeof error === "object" &&
+    "code" in error &&
+    typeof error.code === "string" &&
+    (("name" in error && error.name === "PrismaClientKnownRequestError") ||
+      "clientVersion" in error ||
+      "meta" in error)
+  ) {
+    const prismaError = error as {
+      code: string;
+      message?: string;
+      name?: string;
+      clientVersion?: string;
+      meta?: unknown;
+    };
 
     switch (prismaError.code) {
       // Unique constraint violation
@@ -90,9 +105,9 @@ export const handlePrismaError = (error: unknown): PrismaOperationError => {
       // Table does not exist
       case "P2021":
         return new PrismaOperationError(
-          "Database connection failed. Please try again.",
-          "CONNECTION_FAILED",
-          503,
+          "Database schema is missing or out of date. Please run migrations.",
+          "SCHEMA_ERROR",
+          500,
         );
 
       // Null constraint violation
@@ -187,7 +202,7 @@ export const handlePrismaError = (error: unknown): PrismaOperationError => {
       default:
         return new PrismaOperationError(
           "A database error occurred. Please try again.",
-          prismaError.code || "UNKNOWN_DATABASE_ERROR",
+          "UNKNOWN_PRISMA_ERROR",
           500,
         );
     }
@@ -294,6 +309,46 @@ export const createSuccessResponse = <T>(
 };
 
 /**
+ * Sanitizes sensitive data from objects recursively
+ */
+const sanitizeSensitiveData = (obj: unknown): unknown => {
+  if (obj === null || obj === undefined) {
+    return obj;
+  }
+
+  if (
+    typeof obj === "string" ||
+    typeof obj === "number" ||
+    typeof obj === "boolean"
+  ) {
+    return obj;
+  }
+
+  if (Array.isArray(obj)) {
+    return obj.map((item) => sanitizeSensitiveData(item));
+  }
+
+  if (typeof obj === "object") {
+    const sanitized: Record<string, unknown> = {};
+    for (const [key, value] of Object.entries(obj)) {
+      // Check if key matches sensitive patterns
+      if (
+        /^(phone|mobile|aadhar|ssn|address|family|email|fullName|dob)$/i.test(
+          key,
+        )
+      ) {
+        sanitized[key] = "[REDACTED]";
+      } else {
+        sanitized[key] = sanitizeSensitiveData(value);
+      }
+    }
+    return sanitized;
+  }
+
+  return obj;
+};
+
+/**
  * Logs error details with context for debugging
  */
 export const logError = (
@@ -301,10 +356,15 @@ export const logError = (
   error: unknown,
   additionalContext?: Record<string, unknown>,
 ): void => {
+  const sanitizedContext =
+    additionalContext ?
+      (sanitizeSensitiveData(additionalContext) as Record<string, unknown>)
+    : {};
+
   console.error(`Error in ${context}:`, {
     error: error instanceof Error ? error.message : "Unknown error",
     stack: error instanceof Error ? error.stack : undefined,
     timestamp: new Date().toISOString(),
-    ...additionalContext,
+    ...sanitizedContext,
   });
 };

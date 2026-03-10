@@ -9,17 +9,17 @@ import {
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
 import { headers } from "next/headers";
-import { StudentStatus } from "../../generated/prisma/enums";
+import { Role, StudentStatus } from "../../generated/prisma/enums";
 
 /**
  * Check if the current user has the required role.
  */
-const checkRole = async (allowedRoles: string[]) => {
+const checkRole = async (allowedRoles: Role[]) => {
   const session = await auth.api.getSession({
     headers: await headers(),
   });
 
-  if (!session || !allowedRoles.includes(session.user.role ?? "")) {
+  if (!session || !allowedRoles.includes(session.user.role as Role)) {
     throw new Error("Unauthorized");
   }
 
@@ -31,14 +31,30 @@ const checkRole = async (allowedRoles: string[]) => {
  */
 export const getStudentsForIncharge = async () => {
   try {
-    await checkRole(["HO", "INCHARGE"]);
+    await checkRole([Role.HO, Role.INCHARGE]);
 
     const students = await prisma.user.findMany({
       where: {
-        role: "STUDENT",
+        role: Role.STUDENT,
       },
-      include: {
-        studentProfile: true,
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        emailVerified: true,
+        createdAt: true,
+        updatedAt: true,
+        role: true,
+        banned: true,
+        studentProfile: {
+          select: {
+            status: true,
+            branch: true,
+            gender: true,
+            category: true,
+            lastQualification: true,
+          },
+        },
       },
       orderBy: {
         createdAt: "desc",
@@ -60,24 +76,7 @@ export const updateStudentStatus = async (
   status: StudentStatus,
 ) => {
   try {
-    await checkRole(["HO", "INCHARGE"]);
-
-    // Validate input parameters
-    if (!userId || userId.trim() === "") {
-      throw new PrismaOperationError(
-        "User ID is required.",
-        "INVALID_INPUT",
-        400,
-      );
-    }
-
-    if (!Object.values(StudentStatus).includes(status)) {
-      throw new PrismaOperationError(
-        "Invalid student status provided.",
-        "INVALID_STATUS",
-        400,
-      );
-    }
+    await checkRole([Role.HO, Role.INCHARGE]);
 
     // Check if student exists and has a profile
     const existingStudent = await prisma.user.findUnique({
