@@ -186,8 +186,8 @@ export const handlePrismaError = (error: unknown): PrismaOperationError => {
 
       default:
         return new PrismaOperationError(
-          prismaError.message || "Database operation failed.",
-          prismaError.code,
+          "A database error occurred. Please try again.",
+          prismaError.code || "UNKNOWN_DATABASE_ERROR",
           500,
         );
     }
@@ -250,7 +250,11 @@ export const handlePrismaError = (error: unknown): PrismaOperationError => {
       );
     }
 
-    return new PrismaOperationError(error.message, "UNKNOWN_ERROR", 500);
+    return new PrismaOperationError(
+      "An unexpected error occurred.",
+      "UNKNOWN_ERROR",
+      500,
+    );
   }
 
   return new PrismaOperationError(

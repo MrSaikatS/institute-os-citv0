@@ -15,16 +15,6 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "generated/**",
   ]),
-  {
-    ignores: [
-      "node_modules/**",
-      ".next/**",
-      "out/**",
-      "build/**",
-      "next-env.d.ts",
-      "generated/**",
-    ],
-  },
 ]);
 
 export default eslintConfig;

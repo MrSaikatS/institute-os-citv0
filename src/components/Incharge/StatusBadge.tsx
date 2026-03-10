@@ -1,7 +1,7 @@
 "use client";
 
 import { Badge } from "@/components/shadcnui/badge";
-import { StudentStatus } from "../../../generated/prisma/client";
+import type { StudentStatus } from "../../../generated/prisma/client";
 
 interface StatusBadgeProps {
   status: StudentStatus;

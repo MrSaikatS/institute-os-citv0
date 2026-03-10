@@ -22,7 +22,7 @@ const page = async () => {
           </p>
         </div>
         <div className="rounded-md border border-red-200 bg-red-50 p-4">
-          <p className="font-medium text-red-800">Error: {message}</p>
+          <p className="font-medium text-red-800">{message}</p>
         </div>
       </div>
     );

@@ -242,14 +242,6 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - **shadcn/ui** - Beautiful and accessible UI components
 - **Vercel** - Next.js deployment platform
 
-## 📞 Support
-
-For support, please contact:
-
-- **Author**: Saikat Sardar
-- **Email**: [Your email here]
-- **GitHub Issues**: [Create an issue](https://github.com/MrSaikatS/institute-os-citv0/issues)
-
 ---
 
 ⚠️ **Note**: This is currently in active development. Features and APIs may change.

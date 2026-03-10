@@ -162,9 +162,8 @@ async function main() {
 
     // Display login information for testing
     console.log("\n🔑 Test User Credentials:");
-    console.log("  All users use password: password123");
     seedUsers.forEach((user) => {
-      console.log(`  ${user.role}: ${user.email}`);
+      console.log(`  ${user.role}: ${user.email} | Password: ${user.password}`);
     });
   } catch (error) {
     console.error("❌ Error during seeding:", error);
