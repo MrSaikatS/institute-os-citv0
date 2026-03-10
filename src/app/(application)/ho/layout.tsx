@@ -6,7 +6,7 @@ import { LayoutChildrenProps } from "@/lib/types";
 const HOLayout = ({ children }: LayoutChildrenProps) => {
   return (
     <>
-      <AppSidebar role="ho" />
+      <AppSidebar />
 
       <SidebarInset>
         <AppHeader />

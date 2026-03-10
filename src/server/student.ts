@@ -41,18 +41,10 @@ export const getStudentsForIncharge = async () => {
         id: true,
         name: true,
         email: true,
-        emailVerified: true,
-        createdAt: true,
-        updatedAt: true,
-        role: true,
-        banned: true,
         studentProfile: {
           select: {
             status: true,
             branch: true,
-            gender: true,
-            category: true,
-            lastQualification: true,
           },
         },
       },
@@ -81,7 +73,14 @@ export const updateStudentStatus = async (
     // Check if student exists and has a profile
     const existingStudent = await prisma.user.findUnique({
       where: { id: userId },
-      include: { studentProfile: true },
+      select: {
+        id: true,
+        studentProfile: {
+          select: {
+            id: true,
+          },
+        },
+      },
     });
 
     if (!existingStudent) {
@@ -106,6 +105,9 @@ export const updateStudentStatus = async (
       },
       data: {
         status: status,
+      },
+      select: {
+        status: true,
       },
     });
 

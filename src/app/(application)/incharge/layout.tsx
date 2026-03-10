@@ -6,7 +6,7 @@ import { LayoutChildrenProps } from "@/lib/types";
 const InchargeLayout = ({ children }: LayoutChildrenProps) => {
   return (
     <>
-      <AppSidebar role="incharge" />
+      <AppSidebar />
 
       <SidebarInset>
         <AppHeader />

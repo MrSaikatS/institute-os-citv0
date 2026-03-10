@@ -6,7 +6,7 @@ import { LayoutChildrenProps } from "@/lib/types";
 const StudentLayout = ({ children }: LayoutChildrenProps) => {
   return (
     <>
-      <AppSidebar role="student" />
+      <AppSidebar />
 
       <SidebarInset>
         <AppHeader />

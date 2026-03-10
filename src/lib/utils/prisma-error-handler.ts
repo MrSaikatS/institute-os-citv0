@@ -333,7 +333,7 @@ const sanitizeSensitiveData = (obj: unknown): unknown => {
     for (const [key, value] of Object.entries(obj)) {
       // Check if key matches sensitive patterns
       if (
-        /^(phone|mobile|aadhar|ssn|address|family|email|fullName|dob)$/i.test(
+        /(phone|mobile|aadhar|ssn|address|family|email|name|number|fullName|dob)/i.test(
           key,
         )
       ) {

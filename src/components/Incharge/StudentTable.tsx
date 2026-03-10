@@ -34,26 +34,7 @@ export const StudentTable = ({ students }: StudentTableProps) => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {students.map((student) => (
-            <TableRow key={student.id}>
-              <TableCell className="font-medium">{student.name}</TableCell>
-              <TableCell>{student.email}</TableCell>
-              <TableCell>{student.studentProfile?.branch || "N/A"}</TableCell>
-              <TableCell>
-                <StatusBadge
-                  status={student.studentProfile?.status || "INACTIVE"}
-                />
-              </TableCell>
-              <TableCell className="text-right">
-                <UpdateStatusDialog
-                  userId={student.id}
-                  currentStatus={student.studentProfile?.status || "INACTIVE"}
-                  studentName={student.name}
-                />
-              </TableCell>
-            </TableRow>
-          ))}
-          {students.length === 0 && (
+          {students.length === 0 ?
             <TableRow>
               <TableCell
                 colSpan={5}
@@ -61,7 +42,26 @@ export const StudentTable = ({ students }: StudentTableProps) => {
                 No students found.
               </TableCell>
             </TableRow>
-          )}
+          : students.map((student) => (
+              <TableRow key={student.id}>
+                <TableCell className="font-medium">{student.name}</TableCell>
+                <TableCell>{student.email}</TableCell>
+                <TableCell>{student.studentProfile?.branch || "N/A"}</TableCell>
+                <TableCell>
+                  <StatusBadge
+                    status={student.studentProfile?.status || "INACTIVE"}
+                  />
+                </TableCell>
+                <TableCell className="text-right">
+                  <UpdateStatusDialog
+                    userId={student.id}
+                    currentStatus={student.studentProfile?.status || "INACTIVE"}
+                    studentName={student.name}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          }
         </TableBody>
       </Table>
     </div>

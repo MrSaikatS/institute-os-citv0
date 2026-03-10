@@ -50,6 +50,7 @@ export const UpdateStatusDialog = ({
 
       if (response.success) {
         toast.success(response.message);
+        setIsPending(false);
         setOpen(false);
         router.refresh();
       } else {

@@ -6,7 +6,7 @@ import { LayoutChildrenProps } from "@/lib/types";
 const AccountLayout = ({ children }: LayoutChildrenProps) => {
   return (
     <>
-      <AppSidebar role="account" />
+      <AppSidebar />
 
       <SidebarInset>
         <AppHeader />

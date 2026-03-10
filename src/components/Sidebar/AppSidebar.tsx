@@ -7,14 +7,59 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/shadcnui/sidebar";
+import { auth } from "@/lib/auth";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 
-type AppSidebarProps = {
-  role?: "ho" | "incharge" | "teacher" | "student" | "account";
-};
+const AppSidebar = async () => {
+  const session = await auth.api.getSession({
+    headers: await headers(),
+  });
 
-const AppSidebar = ({ role = "account" }: AppSidebarProps) => {
+  // Only render role-specific content if there's a verified session
+  const getRoleContent = () => {
+    if (!session?.user?.role) {
+      return (
+        <div className="text-muted-foreground p-4 text-sm">Account Menu</div>
+      );
+    }
+
+    switch (session.user.role) {
+      case "student":
+        return (
+          <div className="text-muted-foreground p-4 text-sm">Student Menu</div>
+        );
+      case "teacher":
+        return (
+          <div className="text-muted-foreground p-4 text-sm">Teacher Menu</div>
+        );
+      case "incharge":
+        return (
+          <div className="flex flex-col gap-2 p-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      href="/incharge"
+                      className="flex items-center gap-2">
+                      <span>Student Management</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        );
+      case "ho":
+        return <div className="text-muted-foreground p-4 text-sm">HO Menu</div>;
+      default:
+        return (
+          <div className="text-muted-foreground p-4 text-sm">Account Menu</div>
+        );
+    }
+  };
   return (
     <Sidebar
       variant="sidebar"
@@ -41,33 +86,8 @@ const AppSidebar = ({ role = "account" }: AppSidebarProps) => {
       </SidebarHeader>
 
       <SidebarContent>
-        {/* Role specific sidebar content will go here */}
-        {role === "student" && (
-          <div className="text-muted-foreground p-4 text-sm">Student Menu</div>
-        )}
-        {role === "teacher" && (
-          <div className="text-muted-foreground p-4 text-sm">Teacher Menu</div>
-        )}
-        {role === "incharge" && (
-          <div className="flex flex-col gap-2 p-2">
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton
-                  render={
-                    <Link
-                      href="/incharge"
-                      className="flex items-center gap-2">
-                      <span>Student Management</span>
-                    </Link>
-                  }
-                />
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </div>
-        )}
-        {role === "ho" && (
-          <div className="text-muted-foreground p-4 text-sm">HO Menu</div>
-        )}
+        {/* Role specific sidebar content based on authenticated session */}
+        {getRoleContent()}
       </SidebarContent>
     </Sidebar>
   );
