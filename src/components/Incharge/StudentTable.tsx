@@ -9,8 +9,8 @@ import {
   TableRow,
 } from "@/components/shadcnui/table";
 import type { getStudentsForIncharge } from "@/server/student";
-import { StatusBadge } from "./StatusBadge";
-import { UpdateStatusDialog } from "./UpdateStatusDialog";
+import StatusBadge from "./StatusBadge";
+import UpdateStatusDialog from "./UpdateStatusDialog";
 
 type StudentWithProfile = NonNullable<
   Awaited<ReturnType<typeof getStudentsForIncharge>>["data"]
