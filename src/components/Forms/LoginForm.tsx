@@ -4,6 +4,7 @@ import { authClient } from "@/lib/auth-client";
 import { loginFormSchema, LoginFormType } from "@/lib/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2Icon, LockIcon } from "lucide-react";
+import type { Route } from "next";
 import { useRouter } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
@@ -32,14 +33,25 @@ const LoginForm = () => {
 
   const loginFormHandler = async (loginData: LoginFormType) => {
     try {
-      const { error } = await authClient.signIn.email(loginData);
+      const { error, data } = await authClient.signIn.email(loginData);
 
       if (error) {
         toast.error(error.message);
       } else {
         toast.success("Login successful!");
         reset();
-        replace("/account");
+      }
+
+      if (data) {
+        const {
+          user: { role },
+        } = data;
+
+        if (role) {
+          replace(`/${role.toLowerCase()}` as Route);
+        } else {
+          replace("/account" as Route);
+        }
       }
     } catch (err) {
       toast.error(

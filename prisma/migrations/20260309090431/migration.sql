@@ -7,8 +7,8 @@ CREATE TABLE "user" (
     "image" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
-    "role" TEXT NOT NULL,
-    "banned" BOOLEAN DEFAULT false,
+    "role" TEXT NOT NULL DEFAULT 'STUDENT',
+    "banned" BOOLEAN NOT NULL DEFAULT false,
     "banReason" TEXT,
     "banExpires" DATETIME
 );
@@ -32,7 +32,6 @@ CREATE TABLE "account" (
     "id" TEXT NOT NULL PRIMARY KEY,
     "accountId" TEXT NOT NULL,
     "providerId" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
     "accessToken" TEXT,
     "refreshToken" TEXT,
     "idToken" TEXT,
@@ -42,6 +41,7 @@ CREATE TABLE "account" (
     "password" TEXT,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" DATETIME NOT NULL,
+    "userId" TEXT NOT NULL,
     CONSTRAINT "account_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
 
@@ -58,9 +58,44 @@ CREATE TABLE "verification" (
 -- CreateTable
 CREATE TABLE "student_profile" (
     "id" TEXT NOT NULL PRIMARY KEY,
-    "userId" TEXT NOT NULL,
     "status" TEXT NOT NULL DEFAULT 'INACTIVE',
+    "officialName" TEXT NOT NULL,
+    "occupation" TEXT NOT NULL,
+    "guardianName" TEXT NOT NULL,
+    "sourcesOfIncome" TEXT NOT NULL,
+    "sourcesOfIncomeDetails" TEXT NOT NULL,
+    "fathersName" TEXT NOT NULL,
+    "fathersOccupation" TEXT NOT NULL,
+    "mothersName" TEXT NOT NULL,
+    "mothersOccupation" TEXT NOT NULL,
+    "dateOfBirth" DATETIME NOT NULL,
+    "lastQualification" TEXT NOT NULL,
+    "otherQualification" TEXT,
+    "address" TEXT NOT NULL,
+    "landmark" TEXT NOT NULL,
+    "postOffice" TEXT NOT NULL,
+    "pinCode" TEXT NOT NULL,
+    "district" TEXT NOT NULL,
+    "state" TEXT NOT NULL,
+    "gender" TEXT NOT NULL,
+    "religion" TEXT NOT NULL,
+    "category" TEXT NOT NULL,
+    "branch" TEXT NOT NULL,
+    "aadharNumber" TEXT NOT NULL,
+    "userId" TEXT NOT NULL,
     CONSTRAINT "student_profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "visitor" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "candidateName" TEXT NOT NULL,
+    "candidatePhone" TEXT NOT NULL,
+    "candidateWhatsApp" TEXT,
+    "candidateEmail" TEXT,
+    "source" TEXT NOT NULL,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateIndex

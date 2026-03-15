@@ -4,6 +4,7 @@
 
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript 5
+- **Package Manager**: Bun
 - **Styling**: Tailwind CSS 4 with shadcn/ui
 - **Database**: Prisma 7 with SQLite
 - **Authentication**: Better Auth
@@ -14,21 +15,26 @@
 - **Image Processing**: Sharp
 - **Password Hashing**: @node-rs/argon2
 
-## Database Schema
-
-- **User**: Core user model with roles (HO, INCHARGE, TEACHER, STUDENT), email verification, ban management
-- **Session**: Authentication sessions with IP tracking
-- **Account**: OAuth and credential accounts
-- **Verification**: Email verification tokens
-- **StudentProfile**: Student-specific data with status tracking (ACTIVE, INACTIVE, SUSPENDED, COMPLETED, DROPPED)
-
 ## Project Structure
 
 ```
+public/
+├── cit.png                     # Institute logo
+└── favicon.ico                 # Website favicon
+
+prisma/
+├── migrations/                 # Database migration files
+├── schema.prisma               # Prisma database schema
+└── seed.ts                     # Database seeding script
+
 src/
 ├── app/
 │   ├── (application)/          # Protected application routes with sidebar layout
 │   │   ├── account/            # User account pages
+│   │   ├── ho/                 # Head Office admin interface
+│   │   ├── incharge/           # Department incharge interface
+│   │   ├── teacher/            # Teacher interface
+│   │   ├── student/            # Student interface
 │   │   └── layout.tsx          # Application layout with SidebarProvider
 │   ├── (auth)/                 # Authentication routes
 │   ├── api/                    # API routes
@@ -38,25 +44,23 @@ src/
 │   ├── Buttons/                # Button components
 │   ├── Forms/                  # Form components
 │   ├── Header/                 # Header components
-│   └── Providers/              # Context providers (e.g., ThemeProvider)
+│   ├── Incharge/               # Incharge-related components
+│   ├── Providers/              # Context providers (e.g., ThemeProvider)
+│   ├── Sidebar/                # Sidebar components
+│   └── shadcnui/               # shadcn/ui components
 ├── hooks/                      # Custom React hooks
-└── lib/
-    ├── auth.ts                 # Better Auth configuration
-    ├── auth-client.ts          # Client-side auth utilities
-    ├── database/               # Database connection and utilities
-    ├── env/                    # Environment variable validation
-    ├── fonts.ts                # Font configurations
-    ├── types.ts                # TypeScript type definitions
-    ├── utils.ts                # Utility functions
-    ├── zodSchema.ts            # Zod validation schemas
-    └── argon2.ts               # Password hashing utilities
+├── lib/
+│   ├── auth.ts                 # Better Auth configuration
+│   ├── auth-client.ts          # Client-side auth utilities
+│   ├── authPermissions.ts      # Authentication permissions
+│   ├── database/               # Database connection and utilities
+│   ├── env/                    # Environment variable validation
+│   ├── fonts.ts                # Font configurations
+│   ├── types.ts                # TypeScript type definitions
+│   ├── utils.ts                # Utility functions
+│   ├── utils/                  # Additional utility functions
+│   ├── zodSchema.ts            # Zod validation schemas
+│   └── argon2.ts               # Password hashing utilities
+└── server/                     # Server-side utilities
+    └── student.ts              # Student-related server functions
 ```
-
-## Configuration Files
-
-- **prisma/schema.prisma**: Database schema definition
-- **tailwind.config.js**: Tailwind CSS configuration
-- **next.config.ts**: Next.js configuration
-- **components.json**: shadcn/ui configuration
-- **eslint.config.mjs**: ESLint configuration
-- **tsconfig.json**: TypeScript configuration

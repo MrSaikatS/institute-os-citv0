@@ -49,7 +49,7 @@ const RegisterForm = () => {
 
         reset();
 
-        replace("/account");
+        replace("/");
       }
     } catch (err) {
       toast.error(
