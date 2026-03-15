@@ -6,6 +6,7 @@ import {
   createErrorResponse,
   createSuccessResponse,
   logError,
+  PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
 import { headers } from "next/headers";
 import { Role } from "../../generated/prisma/enums";
@@ -18,8 +19,23 @@ const checkRole = async (allowedRoles: Role[]) => {
     headers: await headers(),
   });
 
-  if (!session || !allowedRoles.includes(session.user.role as Role)) {
-    throw new Error("Unauthorized");
+  if (!session) {
+    throw new PrismaOperationError(
+      "Authentication required",
+      "UNAUTHORIZED",
+      401,
+    );
+  }
+
+  // Normalize role to uppercase for case-insensitive comparison
+  const userRole = session.user.role?.toUpperCase();
+
+  if (!userRole || !allowedRoles.includes(userRole as Role)) {
+    throw new PrismaOperationError(
+      "Insufficient permissions for this operation",
+      "FORBIDDEN",
+      403,
+    );
   }
 
   return session;

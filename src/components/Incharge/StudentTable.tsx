@@ -48,16 +48,21 @@ const StudentTable = ({ students }: StudentTableProps) => {
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.studentProfile?.branch || "N/A"}</TableCell>
                 <TableCell>
-                  <StatusBadge
-                    status={student.studentProfile?.status || "INACTIVE"}
-                  />
+                  {student.studentProfile ?
+                    <StatusBadge status={student.studentProfile.status!} />
+                  : <span className="text-muted-foreground text-sm">
+                      Profile missing
+                    </span>
+                  }
                 </TableCell>
                 <TableCell className="text-right">
-                  <UpdateStatusDialog
-                    userId={student.id}
-                    currentStatus={student.studentProfile?.status || "INACTIVE"}
-                    studentName={student.name}
-                  />
+                  {student.studentProfile ?
+                    <UpdateStatusDialog
+                      userId={student.id}
+                      currentStatus={student.studentProfile.status!}
+                      studentName={student.name}
+                    />
+                  : <span className="text-muted-foreground text-sm">N/A</span>}
                 </TableCell>
               </TableRow>
             ))

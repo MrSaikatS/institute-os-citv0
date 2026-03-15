@@ -311,7 +311,10 @@ export const createSuccessResponse = <T>(
 /**
  * Sanitizes sensitive data from objects recursively
  */
-const sanitizeSensitiveData = (obj: unknown): unknown => {
+const sanitizeSensitiveData = (
+  obj: unknown,
+  visited = new WeakSet(),
+): unknown => {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -324,8 +327,18 @@ const sanitizeSensitiveData = (obj: unknown): unknown => {
     return obj;
   }
 
+  // Check for circular references
+  if (typeof obj === "object" && visited.has(obj)) {
+    return "[Circular]";
+  }
+
+  // Mark object as visited
+  if (typeof obj === "object") {
+    visited.add(obj);
+  }
+
   if (Array.isArray(obj)) {
-    return obj.map((item) => sanitizeSensitiveData(item));
+    return obj.map((item) => sanitizeSensitiveData(item, visited));
   }
 
   if (typeof obj === "object") {
@@ -339,7 +352,7 @@ const sanitizeSensitiveData = (obj: unknown): unknown => {
       ) {
         sanitized[key] = "[REDACTED]";
       } else {
-        sanitized[key] = sanitizeSensitiveData(value);
+        sanitized[key] = sanitizeSensitiveData(value, visited);
       }
     }
     return sanitized;
