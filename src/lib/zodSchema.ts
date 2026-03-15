@@ -38,3 +38,13 @@ export const branchSchema = z.object({
 });
 
 export type BranchFormType = z.infer<typeof branchSchema>;
+
+export const visitorSchema = z.object({
+  candidateName: z.string().min(2, "Name must be at least 2 characters"),
+  candidatePhone: z.string().min(10, "Phone number must be at least 10 digits"),
+  candidateWhatsApp: z.string().optional(),
+  candidateEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
+  source: z.string().min(1, "Source is required"),
+});
+
+export type VisitorFormType = z.infer<typeof visitorSchema>;

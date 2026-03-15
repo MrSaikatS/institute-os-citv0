@@ -28,7 +28,14 @@ export const auth = betterAuth({
       roles: { HO: ho, INCHARGE: incharge, TEACHER: teacher, STUDENT: student },
     }),
   ],
-
+  user: {
+    additionalFields: {
+      branchId: {
+        type: "string",
+        required: false,
+      },
+    },
+  },
   emailAndPassword: {
     enabled: true,
     autoSignIn: false,

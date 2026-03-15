@@ -170,6 +170,7 @@ model Branch {
   // Relations
   users           User[]
   studentProfiles StudentProfile[]
+  visitors        Visitor[]
 
   // Attributes
   @@map("branch")
@@ -185,6 +186,11 @@ model Visitor {
   createdAt         DateTime @default(now()) // Record creation time
   updatedAt         DateTime @updatedAt // Last update time
 
+  // Branch Relation
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
   // Attributes
+  @@index([branchId])
   @@map("visitor")
 }

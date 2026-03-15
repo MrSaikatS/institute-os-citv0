@@ -49,6 +49,17 @@ const AppSidebar = async () => {
                   }
                 />
               </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      href={"/incharge/visitors" as any}
+                      className="flex items-center gap-2">
+                      <span>Visitor Management</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
             </SidebarMenu>
           </div>
         );
@@ -60,9 +71,20 @@ const AppSidebar = async () => {
                 <SidebarMenuButton
                   render={
                     <Link
-                      href="/ho/branches"
+                      href={"/ho/branches" as any}
                       className="flex items-center gap-2">
                       <span>Branch Management</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      href={"/ho/visitors" as any}
+                      className="flex items-center gap-2">
+                      <span>Visitor Management</span>
                     </Link>
                   }
                 />
