@@ -21,9 +21,11 @@ Institute-OS-CITv0 is a role-based web application that provides a unified platf
 ### 👥 User Management
 
 - **Multi-Role System**: Head Office (HO), Incharge, Teacher, and Student roles
+- **Branch Management**: Multi-campus support with 6 branch locations
 - **Student Profiles**: Comprehensive student information management
 - **Visitor Tracking**: Visitor inquiry and lead management system
 - **User Status Management**: Active, inactive, suspended, completed, and dropped statuses
+- **User-Branch Assignment**: Role-based branch assignments for departmental management
 
 ### 🎨 User Interface
 
@@ -37,8 +39,9 @@ Institute-OS-CITv0 is a role-based web application that provides a unified platf
 - **TypeScript**: Full type safety throughout the application
 - **React 19**: Latest React features with concurrent rendering
 - **Next.js 16**: App Router with server components
-- **Prisma 7**: Modern ORM with SQLite database
+- **Prisma 7**: Modern ORM with SQLite database and libsql adapter
 - **Real-time Updates**: Optimistic UI updates
+- **Multi-Campus Architecture**: Branch-based organizational structure
 
 ## 🏗 Architecture
 
@@ -138,11 +141,20 @@ src/
    Update `.env` with your configuration:
 
    ```env
+   # Database connection
    DATABASE_URL="file:./prisma/dev.db"
+
+   # Better Auth configuration
    BETTER_AUTH_SECRET="your-generated-secret-here"
    BETTER_AUTH_URL=http://localhost:3000
    BETTER_AUTH_ALLOWED_ORIGINS=http://localhost:3000
    BETTER_AUTH_TELEMETRY=0
+   ```
+
+   **Important**: Generate a secure `BETTER_AUTH_SECRET` using:
+
+   ```bash
+   openssl rand -base64 32
    ```
 
 4. **Database setup**
@@ -171,12 +183,14 @@ src/
 
 The database seeding creates the following test users:
 
-| Role     | Email                | Password          | Access Level |
-| -------- | -------------------- | ----------------- | ------------ |
-| HO       | ho@citindia.in       | password@ho       | Full Admin   |
-| INCHARGE | incharge@citindia.in | password@incharge | Department   |
-| TEACHER  | teacher@citindia.in  | password@teacher  | Teaching     |
-| STUDENT  | student@citindia.in  | password@student  | Student      |
+| Role     | Email                | Password          | Access Level | Branch Assignment |
+| -------- | -------------------- | ----------------- | ------------ | ----------------- |
+| HO       | ho@citindia.in       | password@ho       | Full Admin   | None (Global)     |
+| INCHARGE | incharge@citindia.in | password@incharge | Department   | Dumdum (Default)  |
+| TEACHER  | teacher@citindia.in  | password@teacher  | Teaching     | Dumdum (Default)  |
+| STUDENT  | student@citindia.in  | password@student  | Student      | Dumdum (Default)  |
+
+**Branch Locations Created**: Dumdum, Baduria, Barasat, Matia, Kholapota, Garia
 
 ## 📱 Available Scripts
 
@@ -208,7 +222,8 @@ bun prisma studio    # Open database browser
 
 - **Prisma Studio**: Visual database browser
 - **Migrations**: Version-controlled schema changes
-- **Seeding**: Automated test data creation
+- **Seeding**: Automated test data creation with branch management
+- **Multi-Campus Support**: Branch-based data organization
 
 ### Component Development
 
