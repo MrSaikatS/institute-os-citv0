@@ -61,22 +61,51 @@ const seedUsers = [
       gender: "Other",
       religion: "Not Specified",
       category: "General",
-      branch: "Computer Science",
       aadharNumber: "123456789012",
     },
   },
+];
+
+const seedBranches = [
+  { name: "Dumdum", code: "DUM" },
+  { name: "Baduria", code: "BAD" },
+  { name: "Barasat", code: "BAR" },
+  { name: "Matia", code: "MAT" },
+  { name: "Kholapota", code: "KHO" },
+  { name: "Garia", code: "GAR" },
 ];
 
 async function main() {
   console.log("🌱 Starting database seeding...");
 
   try {
-    // Create users for each role
+    // 1. Create Branches
+    console.log("🏢 Seeding branches...");
+    const createdBranches = [];
+    for (const branchData of seedBranches) {
+      const branch = await prisma.branch.upsert({
+        where: { name: branchData.name },
+        update: branchData,
+        create: branchData,
+      });
+      createdBranches.push(branch);
+      console.log(`  ✅ Branch: ${branch.name} (${branch.code})`);
+    }
+
+    const defaultBranch = createdBranches[0]; // "Dumdum"
+
+    // 2. Create users for each role
     for (const userData of seedUsers) {
       console.log(`👤 Creating ${userData.role} user: ${userData.email}`);
 
       // Hash the password using Better Auth's hash function
       const hashedPassword = await hashPasswordFunction(userData.password);
+
+      // Branch assignment: Assign Incharge and Student to a branch
+      const userBranchId =
+        userData.role === Role.INCHARGE || userData.role === Role.TEACHER
+          ? defaultBranch.id
+          : undefined;
 
       // Create or update the user
       const user = await prisma.user.upsert({
@@ -84,14 +113,16 @@ async function main() {
         update: {
           name: userData.name,
           role: userData.role,
-          emailVerified: true, // Mark as verified for testing
+          emailVerified: true,
+          branchId: userBranchId,
           updatedAt: new Date(),
         },
         create: {
           name: userData.name,
           email: userData.email,
           role: userData.role,
-          emailVerified: true, // Mark as verified for testing
+          emailVerified: true,
+          branchId: userBranchId,
           createdAt: new Date(),
           updatedAt: new Date(),
         },
@@ -101,7 +132,7 @@ async function main() {
       const account = await prisma.account.upsert({
         where: {
           providerId_accountId: {
-            providerId: "credential", // Better Auth uses "credential" for email/password
+            providerId: "credential",
             accountId: user.id,
           },
         },
@@ -110,7 +141,7 @@ async function main() {
           updatedAt: new Date(),
         },
         create: {
-          providerId: "credential", // Better Auth uses "credential" for email/password
+          providerId: "credential",
           accountId: user.id,
           password: hashedPassword,
           user: {
@@ -130,9 +161,11 @@ async function main() {
           where: { userId: user.id },
           update: {
             ...userData.studentProfile,
+            branchId: defaultBranch.id,
           },
           create: {
             ...userData.studentProfile,
+            branchId: defaultBranch.id,
             userId: user.id,
           },
         });

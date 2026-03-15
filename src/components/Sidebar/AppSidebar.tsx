@@ -53,7 +53,23 @@ const AppSidebar = async () => {
           </div>
         );
       case "ho":
-        return <div className="text-muted-foreground p-4 text-sm">HO Menu</div>;
+        return (
+          <div className="flex flex-col gap-2 p-2">
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  render={
+                    <Link
+                      href="/ho/branches"
+                      className="flex items-center gap-2">
+                      <span>Branch Management</span>
+                    </Link>
+                  }
+                />
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </div>
+        );
       default:
         return (
           <div className="text-muted-foreground p-4 text-sm">Account Menu</div>

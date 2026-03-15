@@ -20,7 +20,7 @@ interface StudentTableProps {
   students: StudentWithProfile[];
 }
 
-export const StudentTable = ({ students }: StudentTableProps) => {
+const StudentTable = ({ students }: StudentTableProps) => {
   return (
     <div className="rounded-md border">
       <Table>
@@ -67,3 +67,5 @@ export const StudentTable = ({ students }: StudentTableProps) => {
     </div>
   );
 };
+
+export default StudentTable;

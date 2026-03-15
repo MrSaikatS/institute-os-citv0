@@ -9,7 +9,7 @@ import {
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
 import { headers } from "next/headers";
-import { Role, StudentStatus } from "../../generated/prisma/enums";
+import { Prisma, Role, StudentStatus } from "../../generated/prisma/client";
 
 /**
  * Check if the current user has the required role.
@@ -31,12 +31,30 @@ const checkRole = async (allowedRoles: Role[]) => {
  */
 export const getStudentsForIncharge = async () => {
   try {
-    await checkRole([Role.HO, Role.INCHARGE]);
+    const session = await checkRole([Role.HO, Role.INCHARGE]);
+
+    const whereClause: Prisma.UserWhereInput = {
+      role: Role.STUDENT,
+    };
+
+    // If the user is an INCHARGE, restrict to their branch
+    if (session.user.role === Role.INCHARGE) {
+      const user = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { branchId: true },
+      });
+
+      if (!user?.branchId) {
+        return createSuccessResponse([], "No branch assigned to incharge");
+      }
+
+      whereClause.studentProfile = {
+        branchId: user.branchId,
+      };
+    }
 
     const students = await prisma.user.findMany({
-      where: {
-        role: Role.STUDENT,
-      },
+      where: whereClause,
       select: {
         id: true,
         name: true,
@@ -44,7 +62,11 @@ export const getStudentsForIncharge = async () => {
         studentProfile: {
           select: {
             status: true,
-            branch: true,
+            branch: {
+              select: {
+                name: true,
+              },
+            },
           },
         },
       },
@@ -53,7 +75,19 @@ export const getStudentsForIncharge = async () => {
       },
     });
 
-    return createSuccessResponse(students, "Students fetched successfully");
+    // Flatten the branch name to make it easier for the frontend
+    const formattedStudents = students.map((student) => ({
+      ...student,
+      studentProfile: {
+        ...student.studentProfile,
+        branch: student.studentProfile?.branch?.name || "N/A",
+      },
+    }));
+
+    return createSuccessResponse(
+      formattedStudents,
+      "Students fetched successfully",
+    );
   } catch (error) {
     logError("getStudentsForIncharge", error);
     return createErrorResponse(error);

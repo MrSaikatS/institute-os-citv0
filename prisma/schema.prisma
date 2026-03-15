@@ -39,16 +39,21 @@ model User {
   accounts       Account[]
   studentProfile StudentProfile?
 
-  // Access Control
+  // Permissions and Access
   role       Role      @default(STUDENT)
   banned     Boolean   @default(false)
   banReason  String?
   banExpires DateTime?
 
+  // Branch Relation
+  branchId String?
+  branch   Branch? @relation(fields: [branchId], references: [id])
+
   // Attributes
   @@unique([email])
   @@index([createdAt])
   @@index([role])
+  @@index([branchId])
   @@map("user")
 }
 
@@ -138,7 +143,8 @@ model StudentProfile {
   gender                 String // Gender
   religion               String // Religion
   category               String // Category
-  branch                 String // Branch
+  branchId               String?
+  branch                 Branch?       @relation(fields: [branchId], references: [id])
   aadharNumber           String // Aadhar number
 
   // Relations
@@ -148,7 +154,25 @@ model StudentProfile {
   // Attributes
   @@unique([userId])
   @@index([status])
+  @@index([branchId])
   @@map("student_profile")
+}
+
+model Branch {
+  id        String   @id @default(uuid()) // Primary key
+  name      String   @unique // e.g., "Dumdum", "Barasat"
+  code      String?  @unique // e.g., "DUM", "BAR"
+  address   String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now()) // Record creation time
+  updatedAt DateTime @updatedAt // Last update time
+
+  // Relations
+  users           User[]
+  studentProfiles StudentProfile[]
+
+  // Attributes
+  @@map("branch")
 }
 
 model Visitor {

@@ -29,3 +29,12 @@ export const registerFormSchema = z
   });
 
 export type RegisterFormType = z.infer<typeof registerFormSchema>;
+
+export const branchSchema = z.object({
+  name: z.string().min(2, "Branch name must be at least 2 characters"),
+  code: z.string().optional(),
+  address: z.string().optional(),
+  isActive: z.boolean().default(true),
+});
+
+export type BranchFormType = z.infer<typeof branchSchema>;

@@ -7,7 +7,7 @@ interface StatusBadgeProps {
   status: StudentStatus;
 }
 
-export const StatusBadge = ({ status }: StatusBadgeProps) => {
+const StatusBadge = ({ status }: StatusBadgeProps) => {
   switch (status) {
     case "ACTIVE":
       return <Badge variant="default">Active</Badge>;
@@ -23,3 +23,5 @@ export const StatusBadge = ({ status }: StatusBadgeProps) => {
       return <Badge variant="outline">{status}</Badge>;
   }
 };
+
+export default StatusBadge;
