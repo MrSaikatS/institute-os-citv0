@@ -46,6 +46,9 @@ const checkRole = async (allowedRoles: Role[]) => {
  */
 export const getBranches = async () => {
   try {
+    // Perform authorization check - allow all authenticated roles to read branches
+    await checkRole([Role.HO, Role.INCHARGE, Role.TEACHER, Role.STUDENT]);
+
     const branches = await prisma.branch.findMany({
       orderBy: {
         name: "asc",
@@ -114,6 +117,37 @@ export const updateBranch = async (
 export const deleteBranch = async (id: string) => {
   try {
     await checkRole([Role.HO]);
+
+    // Check for linked records before deletion
+    const [linkedUser, linkedStudent, linkedVisitor] = await Promise.all([
+      prisma.user.findFirst({ where: { branchId: id } }),
+      prisma.studentProfile.findFirst({ where: { branchId: id } }),
+      prisma.visitor.findFirst({ where: { branchId: id } }),
+    ]);
+
+    if (linkedUser) {
+      throw new PrismaOperationError(
+        "Cannot delete branch: linked users exist",
+        "CONFLICT",
+        409,
+      );
+    }
+
+    if (linkedStudent) {
+      throw new PrismaOperationError(
+        "Cannot delete branch: linked student profiles exist",
+        "CONFLICT",
+        409,
+      );
+    }
+
+    if (linkedVisitor) {
+      throw new PrismaOperationError(
+        "Cannot delete branch: linked visitors exist",
+        "CONFLICT",
+        409,
+      );
+    }
 
     await prisma.branch.delete({
       where: { id },

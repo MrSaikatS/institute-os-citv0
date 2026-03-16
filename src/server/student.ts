@@ -1,45 +1,14 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import prisma from "@/lib/database/dbClient";
+import { checkRole } from "@/lib/utils/checkRole";
 import {
   createErrorResponse,
   createSuccessResponse,
   logError,
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
-import { headers } from "next/headers";
 import { Prisma, Role, StudentStatus } from "../../generated/prisma/client";
-
-/**
- * Check if the current user has the required role.
- */
-const checkRole = async (allowedRoles: Role[]) => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    throw new PrismaOperationError(
-      "Authentication required",
-      "UNAUTHORIZED",
-      401,
-    );
-  }
-
-  // Normalize role to uppercase for case-insensitive comparison
-  const userRole = session.user.role?.toUpperCase();
-
-  if (!userRole || !allowedRoles.includes(userRole as Role)) {
-    throw new PrismaOperationError(
-      "Insufficient permissions for this operation",
-      "FORBIDDEN",
-      403,
-    );
-  }
-
-  return session;
-};
 
 /**
  * Fetches all students with their profiles for the incharge dashboard.
@@ -53,7 +22,7 @@ export const getStudentsForIncharge = async () => {
     };
 
     // If the user is an INCHARGE, restrict to their branch
-    if (session.user.role === Role.INCHARGE) {
+    if (session.user.role?.toUpperCase() === Role.INCHARGE) {
       const user = await prisma.user.findUnique({
         where: { id: session.user.id },
         select: { branchId: true },

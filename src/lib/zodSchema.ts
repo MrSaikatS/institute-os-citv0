@@ -31,20 +31,42 @@ export const registerFormSchema = z
 export type RegisterFormType = z.infer<typeof registerFormSchema>;
 
 export const branchSchema = z.object({
-  name: z.string().min(2, "Branch name must be at least 2 characters"),
-  code: z.string().optional(),
-  address: z.string().optional(),
+  name: z.string().trim().min(2, "Branch name must be at least 2 characters"),
+  code: z
+    .string()
+    .trim()
+    .optional()
+    .transform((s) => (s === "" ? undefined : s)),
+  address: z
+    .string()
+    .trim()
+    .optional()
+    .transform((s) => (s === "" ? undefined : s)),
   isActive: z.boolean().default(true),
 });
 
 export type BranchFormType = z.infer<typeof branchSchema>;
 
 export const visitorSchema = z.object({
-  candidateName: z.string().min(2, "Name must be at least 2 characters"),
-  candidatePhone: z.string().min(10, "Phone number must be at least 10 digits"),
-  candidateWhatsApp: z.string().optional(),
-  candidateEmail: z.string().email("Invalid email address").optional().or(z.literal("")),
-  source: z.string().min(1, "Source is required"),
+  candidateName: z.string().trim().min(2, "Name must be at least 2 characters"),
+  candidatePhone: z
+    .string()
+    .trim()
+    .min(10, "Phone number must be at least 10 digits"),
+  candidateWhatsApp: z
+    .string()
+    .trim()
+    .optional()
+    .transform((s) => (s === "" ? undefined : s))
+    .refine((phone) => !phone || /^\+?[1-9]\d{1,14}$/.test(phone), {
+      message: "Invalid WhatsApp number format",
+    }),
+  candidateEmail: z
+    .string()
+    .email("Invalid email address")
+    .optional()
+    .or(z.literal("")),
+  source: z.string().trim().min(1, "Source is required"),
 });
 
 export type VisitorFormType = z.infer<typeof visitorSchema>;
