@@ -62,11 +62,15 @@ export const visitorSchema = z.object({
     }),
   candidateWhatsApp: z
     .string()
-    .trim()
-    .optional()
+    .transform((phone) => phone.replace(/\s+/g, "")) // Remove all whitespace
+    .transform((phone) => phone.replace(/[^\d+]/g, "")) // Remove non-digit characters except +
     .transform((s) => (s === "" ? undefined : s))
-    .refine((phone) => !phone || /^\+?[1-9]\d{1,14}$/.test(phone), {
-      message: "Invalid WhatsApp number format",
+    .refine((phone) => !phone || phone.length >= 10, {
+      message: "WhatsApp number must be at least 10 digits",
+    })
+    .refine((phone) => !phone || /^\+?[1-9]\d{9,14}$/.test(phone), {
+      message:
+        "Invalid WhatsApp number format. Use digits only, optionally with country code (+)",
     }),
   candidateEmail: z.email("Invalid email address").optional().or(z.literal("")),
   source: z.string().trim().min(1, "Source is required"),

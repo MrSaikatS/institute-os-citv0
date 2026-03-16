@@ -1,7 +1,6 @@
-import VisitorTable from "@/components/Incharge/Visitor/VisitorTable";
 import VisitorForm from "@/components/Incharge/Visitor/VisitorForm";
-import { getVisitors } from "@/server/visitor";
-import { Metadata } from "next";
+import VisitorTable from "@/components/Incharge/Visitor/VisitorTable";
+import { Button } from "@/components/shadcnui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,9 +8,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/shadcnui/dialog";
-import { Button } from "@/components/shadcnui/button";
+import { getVisitors } from "@/server/visitor";
 import { PlusIcon } from "lucide-react";
+import { Metadata } from "next";
 import { revalidatePath } from "next/cache";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Visitor Management - Institute OS",
@@ -31,7 +33,9 @@ const VisitorsPage = async () => {
     return (
       <div className="flex flex-col gap-6 p-6">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Visitor Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Visitor Management
+          </h1>
           <p className="text-muted-foreground">
             View and record branch visitors and inquiries.
           </p>
@@ -47,7 +51,9 @@ const VisitorsPage = async () => {
     <div className="flex flex-col gap-6 p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Visitor Management</h1>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Visitor Management
+          </h1>
           <p className="text-muted-foreground">
             View and record branch visitors and inquiries.
           </p>

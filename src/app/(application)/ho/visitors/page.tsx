@@ -2,6 +2,8 @@ import VisitorTable from "@/components/Incharge/Visitor/VisitorTable";
 import { getVisitors } from "@/server/visitor";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "All Visitors - Institute OS",
   description: "View all branch visitors and inquiries",

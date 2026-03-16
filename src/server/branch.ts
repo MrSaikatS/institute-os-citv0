@@ -8,7 +8,7 @@ import {
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
 import { checkRole } from "@/server/auth/checkRole";
-import { Role } from "../../generated/prisma/enums";
+import { Role } from "../../generated/prisma/client";
 
 /**
  * Fetches all branches.
@@ -118,9 +118,62 @@ export const deleteBranch = async (id: string) => {
       );
     }
 
-    await prisma.branch.delete({
-      where: { id },
-    });
+    try {
+      await prisma.branch.delete({
+        where: { id },
+      });
+    } catch (error) {
+      // Handle foreign key constraint violations
+      if (
+        error &&
+        typeof error === "object" &&
+        "name" in error &&
+        error.name === "PrismaClientKnownRequestError" &&
+        "code" in error &&
+        error.code === "P2003"
+      ) {
+        // Try to determine which type of record is causing the constraint violation
+        const [linkedUser, linkedStudent, linkedVisitor] = await Promise.all([
+          prisma.user.findFirst({ where: { branchId: id } }),
+          prisma.studentProfile.findFirst({ where: { branchId: id } }),
+          prisma.visitor.findFirst({ where: { branchId: id } }),
+        ]);
+
+        if (linkedUser) {
+          throw new PrismaOperationError(
+            "Cannot delete branch: linked users exist",
+            "CONFLICT",
+            409,
+          );
+        }
+
+        if (linkedStudent) {
+          throw new PrismaOperationError(
+            "Cannot delete branch: linked student profiles exist",
+            "CONFLICT",
+            409,
+          );
+        }
+
+        if (linkedVisitor) {
+          throw new PrismaOperationError(
+            "Cannot delete branch: linked visitors exist",
+            "CONFLICT",
+            409,
+          );
+        }
+
+        // Generic fallback if we can't determine the specific type
+        throw new PrismaOperationError(
+          "Cannot delete branch: linked records exist",
+          "CONFLICT",
+          409,
+        );
+      }
+
+      // Re-throw other errors
+      throw error;
+    }
 
     return createSuccessResponse(null, "Branch deleted successfully");
   } catch (error) {

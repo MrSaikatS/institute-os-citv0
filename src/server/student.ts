@@ -88,7 +88,7 @@ export const updateStudentStatus = async (
   status: StudentStatus,
 ) => {
   try {
-    await checkRole([Role.HO, Role.INCHARGE]);
+    const session = await checkRole([Role.HO, Role.INCHARGE]);
 
     // Check if student exists and has a profile
     const existingStudent = await prisma.user.findUnique({
@@ -98,6 +98,7 @@ export const updateStudentStatus = async (
         studentProfile: {
           select: {
             id: true,
+            branchId: true,
           },
         },
       },
@@ -117,6 +118,30 @@ export const updateStudentStatus = async (
         "PROFILE_NOT_FOUND",
         404,
       );
+    }
+
+    // If the user is an INCHARGE, verify the target student's branch matches the caller's branch
+    if (session.user.role?.toUpperCase() === Role.INCHARGE) {
+      const caller = await prisma.user.findUnique({
+        where: { id: session.user.id },
+        select: { branchId: true },
+      });
+
+      if (!caller?.branchId) {
+        throw new PrismaOperationError(
+          "No branch assigned to incharge.",
+          "NO_BRANCH_ASSIGNED",
+          403,
+        );
+      }
+
+      if (existingStudent.studentProfile.branchId !== caller.branchId) {
+        throw new PrismaOperationError(
+          "You can only update students from your own branch.",
+          "BRANCH_MISMATCH",
+          403,
+        );
+      }
     }
 
     const updatedProfile = await prisma.studentProfile.update({

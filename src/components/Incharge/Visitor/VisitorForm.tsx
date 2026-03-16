@@ -20,7 +20,7 @@ const VisitorForm = ({ onSuccess }: VisitorFormProps) => {
     control,
     formState: { isSubmitting },
     reset,
-  } = useForm<VisitorFormType>({
+  } = useForm({
     resolver: zodResolver(visitorSchema),
     defaultValues: {
       candidateName: "",

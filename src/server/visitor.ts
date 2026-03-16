@@ -75,11 +75,8 @@ export const createVisitor = async (data: {
 
     let branchId: string | null = null;
 
-    // First check if branchId is provided in data
-    if (data.branchId) {
-      branchId = data.branchId;
-    } else if (user.role?.toUpperCase() === Role.INCHARGE) {
-      // For INCHARGE users, use their assigned branch
+    // If the user is an INCHARGE, require and use their assigned branch
+    if (user.role?.toUpperCase() === Role.INCHARGE) {
       if (!user.branchId) {
         throw new PrismaOperationError(
           "Incharge must be assigned to a branch to record visitors",
@@ -88,8 +85,11 @@ export const createVisitor = async (data: {
         );
       }
       branchId = user.branchId;
+    } else if (data.branchId) {
+      // For non-INCHARGE roles, allow caller-supplied branchId
+      branchId = data.branchId;
     } else {
-      // For HO users without branchId in data, require branch assignment
+      // For other roles without branchId in data, require branch assignment
       throw new PrismaOperationError(
         "Branch assignment is required to record visitors",
         "BAD_REQUEST",

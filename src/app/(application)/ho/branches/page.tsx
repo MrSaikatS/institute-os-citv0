@@ -8,6 +8,8 @@ import {
 import { getBranches } from "@/server/branch";
 import { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Branch Management - Institute OS",
   description: "Manage institute branches",
