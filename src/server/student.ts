@@ -1,13 +1,13 @@
 "use server";
 
 import prisma from "@/lib/database/dbClient";
-import { checkRole } from "@/lib/utils/checkRole";
 import {
   createErrorResponse,
   createSuccessResponse,
   logError,
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
+import { checkRole } from "@/server/auth/checkRole";
 import { Prisma, Role, StudentStatus } from "../../generated/prisma/client";
 
 /**
@@ -33,7 +33,9 @@ export const getStudentsForIncharge = async () => {
       }
 
       whereClause.studentProfile = {
-        branchId: user.branchId,
+        is: {
+          branchId: user.branchId,
+        },
       };
     }
 

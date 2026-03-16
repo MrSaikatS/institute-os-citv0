@@ -1,13 +1,13 @@
 "use server";
 
 import prisma from "@/lib/database/dbClient";
-import { checkRole } from "@/lib/utils/checkRole";
 import {
   createErrorResponse,
   createSuccessResponse,
   logError,
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
+import { checkRole } from "@/server/auth/checkRole";
 import { Role } from "../../generated/prisma/enums";
 
 interface UserSession {
@@ -65,13 +65,21 @@ export const createVisitor = async (data: {
   candidateWhatsApp?: string;
   candidateEmail?: string;
   source: string;
+  branchId?: string;
 }) => {
+  let user: UserSession | null = null;
+
   try {
     const session = await checkRole([Role.HO, Role.INCHARGE]);
-    const user = session.user as unknown as UserSession;
+    user = session.user as unknown as UserSession;
 
-    let branchId = null;
-    if (user.role?.toUpperCase() === Role.INCHARGE) {
+    let branchId: string | null = null;
+
+    // First check if branchId is provided in data
+    if (data.branchId) {
+      branchId = data.branchId;
+    } else if (user.role?.toUpperCase() === Role.INCHARGE) {
+      // For INCHARGE users, use their assigned branch
       if (!user.branchId) {
         throw new PrismaOperationError(
           "Incharge must be assigned to a branch to record visitors",
@@ -80,6 +88,13 @@ export const createVisitor = async (data: {
         );
       }
       branchId = user.branchId;
+    } else {
+      // For HO users without branchId in data, require branch assignment
+      throw new PrismaOperationError(
+        "Branch assignment is required to record visitors",
+        "BAD_REQUEST",
+        400,
+      );
     }
 
     const visitor = await prisma.visitor.create({
@@ -91,7 +106,17 @@ export const createVisitor = async (data: {
 
     return createSuccessResponse(visitor, "Visitor recorded successfully");
   } catch (error) {
-    logError("createVisitor", error, data);
+    const errorCode =
+      error && typeof error === "object" && "code" in error ?
+        String(error.code)
+      : undefined;
+
+    logError("createVisitor", error, {
+      role: user?.role || "unknown",
+      branchId: user?.branchId || "unknown",
+      source: data.source,
+      errorCode,
+    });
     return createErrorResponse(error);
   }
 };

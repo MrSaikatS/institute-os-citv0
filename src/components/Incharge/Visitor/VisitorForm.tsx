@@ -11,7 +11,7 @@ import { Field, FieldError, FieldLabel } from "../../shadcnui/field";
 import { Input } from "../../shadcnui/input";
 
 interface VisitorFormProps {
-  onSuccess?: () => void;
+  onSuccess?: () => Promise<void>;
 }
 
 const VisitorForm = ({ onSuccess }: VisitorFormProps) => {
@@ -39,7 +39,7 @@ const VisitorForm = ({ onSuccess }: VisitorFormProps) => {
       if (response.success) {
         toast.success(response.message || "Visitor recorded successfully!");
         reset();
-        onSuccess?.();
+        await onSuccess?.();
       } else {
         toast.error(response.message || "Failed to record visitor.");
       }

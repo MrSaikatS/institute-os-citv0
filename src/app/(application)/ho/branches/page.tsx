@@ -1,4 +1,3 @@
-import { getBranches } from "@/server/branch";
 import {
   Card,
   CardContent,
@@ -6,6 +5,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/shadcnui/card";
+import { getBranches } from "@/server/branch";
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
@@ -14,10 +14,10 @@ export const metadata: Metadata = {
 };
 
 const BranchesPage = async () => {
-  const { data: branches, success } = await getBranches();
+  const { data: branches, success, message } = await getBranches();
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 p-6">
       <Card>
         <CardHeader>
           <CardTitle className="text-2xl">Branch Management</CardTitle>
@@ -26,11 +26,10 @@ const BranchesPage = async () => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {!success ? (
-            <div className="text-red-500">Failed to load branches.</div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left border-collapse">
+          {!success ?
+            <div className="text-red-500">{message}</div>
+          : <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-left text-sm">
                 <thead>
                   <tr className="border-b">
                     <th className="p-3 font-semibold">Name</th>
@@ -41,28 +40,34 @@ const BranchesPage = async () => {
                 </thead>
                 <tbody>
                   {branches?.map((branch) => (
-                    <tr key={branch.id} className="border-b hover:bg-muted/50 transition-colors">
+                    <tr
+                      key={branch.id}
+                      className="hover:bg-muted/50 border-b transition-colors">
                       <td className="p-3">{branch.name}</td>
                       <td className="p-3">{branch.code || "N/A"}</td>
                       <td className="p-3">{branch.address || "N/A"}</td>
                       <td className="p-3">
-                        <span className={`px-2 py-1 rounded-full text-xs ${branch.isActive ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                          {branch.isActive ? 'Active' : 'Inactive'}
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs ${branch.isActive ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>
+                          {branch.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
                     </tr>
                   ))}
                   {branches?.length === 0 && (
                     <tr>
-                      <td colSpan={4} className="p-6 text-center text-muted-foreground">
-                        No branches found. Please seed the database or add a branch.
+                      <td
+                        colSpan={4}
+                        className="text-muted-foreground p-6 text-center">
+                        No branches found. Please seed the database or add a
+                        branch.
                       </td>
                     </tr>
                   )}
                 </tbody>
               </table>
             </div>
-          )}
+          }
         </CardContent>
       </Card>
     </div>

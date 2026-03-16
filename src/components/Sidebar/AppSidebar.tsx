@@ -8,6 +8,7 @@ import {
   SidebarMenuItem,
 } from "@/components/shadcnui/sidebar";
 import { auth } from "@/lib/auth";
+import { Route } from "next";
 import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
@@ -26,15 +27,15 @@ const AppSidebar = async () => {
     }
 
     switch (session.user.role) {
-      case "student":
+      case "STUDENT":
         return (
           <div className="text-muted-foreground p-4 text-sm">Student Menu</div>
         );
-      case "teacher":
+      case "TEACHER":
         return (
           <div className="text-muted-foreground p-4 text-sm">Teacher Menu</div>
         );
-      case "incharge":
+      case "INCHARGE":
         return (
           <div className="flex flex-col gap-2 p-2">
             <SidebarMenu>
@@ -53,7 +54,7 @@ const AppSidebar = async () => {
                 <SidebarMenuButton
                   render={
                     <Link
-                      href={"/incharge/visitors" as any}
+                      href={"/incharge/visitors" as Route}
                       className="flex items-center gap-2">
                       <span>Visitor Management</span>
                     </Link>
@@ -63,7 +64,7 @@ const AppSidebar = async () => {
             </SidebarMenu>
           </div>
         );
-      case "ho":
+      case "HO":
         return (
           <div className="flex flex-col gap-2 p-2">
             <SidebarMenu>
@@ -71,7 +72,7 @@ const AppSidebar = async () => {
                 <SidebarMenuButton
                   render={
                     <Link
-                      href={"/ho/branches" as any}
+                      href={"/ho/branches" as Route}
                       className="flex items-center gap-2">
                       <span>Branch Management</span>
                     </Link>
@@ -82,7 +83,7 @@ const AppSidebar = async () => {
                 <SidebarMenuButton
                   render={
                     <Link
-                      href={"/ho/visitors" as any}
+                      href={"/ho/visitors" as Route}
                       className="flex items-center gap-2">
                       <span>Visitor Management</span>
                     </Link>

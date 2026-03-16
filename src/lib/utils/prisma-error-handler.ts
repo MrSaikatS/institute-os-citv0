@@ -327,35 +327,38 @@ const sanitizeSensitiveData = (
     return obj;
   }
 
-  // Check for circular references
-  if (typeof obj === "object" && visited.has(obj)) {
-    return "[Circular]";
-  }
-
-  // Mark object as visited
   if (typeof obj === "object") {
-    visited.add(obj);
-  }
-
-  if (Array.isArray(obj)) {
-    return obj.map((item) => sanitizeSensitiveData(item, visited));
-  }
-
-  if (typeof obj === "object") {
-    const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Check if key matches sensitive patterns
-      if (
-        /(phone|mobile|aadhar|ssn|address|family|email|name|number|fullName|dob)/i.test(
-          key,
-        )
-      ) {
-        sanitized[key] = "[REDACTED]";
-      } else {
-        sanitized[key] = sanitizeSensitiveData(value, visited);
-      }
+    // Check for circular references
+    if (visited.has(obj)) {
+      return "[Circular]";
     }
-    return sanitized;
+
+    // Mark object as visited for current path
+    visited.add(obj);
+
+    try {
+      if (Array.isArray(obj)) {
+        return obj.map((item) => sanitizeSensitiveData(item, visited));
+      }
+
+      const sanitized: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        // Check if key matches sensitive patterns
+        if (
+          /(phone|mobile|aadhar|ssn|address|family|email|name|number|fullName|dob)/i.test(
+            key,
+          )
+        ) {
+          sanitized[key] = "[REDACTED]";
+        } else {
+          sanitized[key] = sanitizeSensitiveData(value, visited);
+        }
+      }
+      return sanitized;
+    } finally {
+      // Remove object from visited set when done processing current path
+      visited.delete(obj);
+    }
   }
 
   return obj;

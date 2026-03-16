@@ -1,7 +1,7 @@
 import { auth } from "@/lib/auth";
 import { headers } from "next/headers";
 import { Role } from "../../../generated/prisma/enums";
-import { PrismaOperationError } from "./prisma-error-handler";
+import { PrismaOperationError } from "../../lib/utils/prisma-error-handler";
 
 /**
  * Check if the current user has the required role.

@@ -51,8 +51,15 @@ export const visitorSchema = z.object({
   candidateName: z.string().trim().min(2, "Name must be at least 2 characters"),
   candidatePhone: z
     .string()
-    .trim()
-    .min(10, "Phone number must be at least 10 digits"),
+    .transform((phone) => phone.replace(/\s+/g, "")) // Remove all whitespace
+    .transform((phone) => phone.replace(/[^\d+]/g, "")) // Remove non-digit characters except +
+    .refine((phone) => phone.length >= 10, {
+      message: "Phone number must be at least 10 digits",
+    })
+    .refine((phone) => /^\+?[1-9]\d{9,14}$/.test(phone), {
+      message:
+        "Invalid phone number format. Use digits only, optionally with country code (+)",
+    }),
   candidateWhatsApp: z
     .string()
     .trim()
@@ -61,11 +68,7 @@ export const visitorSchema = z.object({
     .refine((phone) => !phone || /^\+?[1-9]\d{1,14}$/.test(phone), {
       message: "Invalid WhatsApp number format",
     }),
-  candidateEmail: z
-    .string()
-    .email("Invalid email address")
-    .optional()
-    .or(z.literal("")),
+  candidateEmail: z.email("Invalid email address").optional().or(z.literal("")),
   source: z.string().trim().min(1, "Source is required"),
 });
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { Badge } from "@/components/shadcnui/badge";
 import {
   Table,
   TableBody,
@@ -9,7 +10,6 @@ import {
   TableRow,
 } from "@/components/shadcnui/table";
 import { format } from "date-fns";
-import { Badge } from "@/components/shadcnui/badge";
 
 interface Visitor {
   id: string;
@@ -29,6 +29,8 @@ interface VisitorTableProps {
 }
 
 const VisitorTable = ({ visitors }: VisitorTableProps) => {
+  const hasAnyBranch = visitors.some((visitor) => !!visitor.branch);
+
   if (visitors.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center rounded-md border border-dashed p-10 text-center">
@@ -41,7 +43,7 @@ const VisitorTable = ({ visitors }: VisitorTableProps) => {
   }
 
   return (
-    <div className="rounded-md border overflow-hidden">
+    <div className="overflow-hidden rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
@@ -50,7 +52,7 @@ const VisitorTable = ({ visitors }: VisitorTableProps) => {
             <TableHead>Phone / WhatsApp</TableHead>
             <TableHead>Email</TableHead>
             <TableHead>Source</TableHead>
-            {visitors[0]?.branch && <TableHead>Branch</TableHead>}
+            {hasAnyBranch && <TableHead>Branch</TableHead>}
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -64,7 +66,7 @@ const VisitorTable = ({ visitors }: VisitorTableProps) => {
                 <div className="flex flex-col gap-1">
                   <span>{visitor.candidatePhone}</span>
                   {visitor.candidateWhatsApp && (
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-muted-foreground text-xs">
                       WA: {visitor.candidateWhatsApp}
                     </span>
                   )}
@@ -72,11 +74,15 @@ const VisitorTable = ({ visitors }: VisitorTableProps) => {
               </TableCell>
               <TableCell>{visitor.candidateEmail || "-"}</TableCell>
               <TableCell>
-                <Badge variant="outline" className="font-normal capitalize">
+                <Badge
+                  variant="outline"
+                  className="font-normal capitalize">
                   {visitor.source}
                 </Badge>
               </TableCell>
-              {visitor.branch && <TableCell>{visitor.branch.name}</TableCell>}
+              {hasAnyBranch && (
+                <TableCell>{visitor.branch?.name || "-"}</TableCell>
+              )}
             </TableRow>
           ))}
         </TableBody>

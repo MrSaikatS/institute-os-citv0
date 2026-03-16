@@ -1,6 +1,5 @@
 "use server";
 
-import { auth } from "@/lib/auth";
 import prisma from "@/lib/database/dbClient";
 import {
   createErrorResponse,
@@ -8,38 +7,8 @@ import {
   logError,
   PrismaOperationError,
 } from "@/lib/utils/prisma-error-handler";
-import { headers } from "next/headers";
+import { checkRole } from "@/server/auth/checkRole";
 import { Role } from "../../generated/prisma/enums";
-
-/**
- * Check if the current user has the required role.
- */
-const checkRole = async (allowedRoles: Role[]) => {
-  const session = await auth.api.getSession({
-    headers: await headers(),
-  });
-
-  if (!session) {
-    throw new PrismaOperationError(
-      "Authentication required",
-      "UNAUTHORIZED",
-      401,
-    );
-  }
-
-  // Normalize role to uppercase for case-insensitive comparison
-  const userRole = session.user.role?.toUpperCase();
-
-  if (!userRole || !allowedRoles.includes(userRole as Role)) {
-    throw new PrismaOperationError(
-      "Insufficient permissions for this operation",
-      "FORBIDDEN",
-      403,
-    );
-  }
-
-  return session;
-};
 
 /**
  * Fetches all branches.
