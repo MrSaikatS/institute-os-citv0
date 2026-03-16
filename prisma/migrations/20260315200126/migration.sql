@@ -10,7 +10,9 @@ CREATE TABLE "user" (
     "role" TEXT NOT NULL DEFAULT 'STUDENT',
     "banned" BOOLEAN NOT NULL DEFAULT false,
     "banReason" TEXT,
-    "banExpires" DATETIME
+    "banExpires" DATETIME,
+    "branchId" TEXT,
+    CONSTRAINT "user_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branch" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateTable
@@ -80,10 +82,22 @@ CREATE TABLE "student_profile" (
     "gender" TEXT NOT NULL,
     "religion" TEXT NOT NULL,
     "category" TEXT NOT NULL,
-    "branch" TEXT NOT NULL,
+    "branchId" TEXT,
     "aadharNumber" TEXT NOT NULL,
     "userId" TEXT NOT NULL,
+    CONSTRAINT "student_profile_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branch" ("id") ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "student_profile_userId_fkey" FOREIGN KEY ("userId") REFERENCES "user" ("id") ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+-- CreateTable
+CREATE TABLE "branch" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "name" TEXT NOT NULL,
+    "code" TEXT,
+    "address" TEXT,
+    "isActive" BOOLEAN NOT NULL DEFAULT true,
+    "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" DATETIME NOT NULL
 );
 
 -- CreateTable
@@ -95,7 +109,9 @@ CREATE TABLE "visitor" (
     "candidateEmail" TEXT,
     "source" TEXT NOT NULL,
     "createdAt" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" DATETIME NOT NULL
+    "updatedAt" DATETIME NOT NULL,
+    "branchId" TEXT,
+    CONSTRAINT "visitor_branchId_fkey" FOREIGN KEY ("branchId") REFERENCES "branch" ("id") ON DELETE SET NULL ON UPDATE CASCADE
 );
 
 -- CreateIndex
@@ -103,6 +119,9 @@ CREATE INDEX "user_createdAt_idx" ON "user"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "user_role_idx" ON "user"("role");
+
+-- CreateIndex
+CREATE INDEX "user_branchId_idx" ON "user"("branchId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "user_email_key" ON "user"("email");
@@ -135,4 +154,16 @@ CREATE INDEX "verification_expiresAt_idx" ON "verification"("expiresAt");
 CREATE INDEX "student_profile_status_idx" ON "student_profile"("status");
 
 -- CreateIndex
+CREATE INDEX "student_profile_branchId_idx" ON "student_profile"("branchId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "student_profile_userId_key" ON "student_profile"("userId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "branch_name_key" ON "branch"("name");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "branch_code_key" ON "branch"("code");
+
+-- CreateIndex
+CREATE INDEX "visitor_branchId_idx" ON "visitor"("branchId");

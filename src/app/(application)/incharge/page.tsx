@@ -1,6 +1,8 @@
-import { StudentTable } from "@/components/Incharge/StudentTable";
+import StudentTable from "@/components/Incharge/StudentTable";
 import { getStudentsForIncharge } from "@/server/student";
 import { Metadata } from "next";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Incharge - Institute OS",

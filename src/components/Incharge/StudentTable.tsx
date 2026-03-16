@@ -9,8 +9,8 @@ import {
   TableRow,
 } from "@/components/shadcnui/table";
 import type { getStudentsForIncharge } from "@/server/student";
-import { StatusBadge } from "./StatusBadge";
-import { UpdateStatusDialog } from "./UpdateStatusDialog";
+import StatusBadge from "./StatusBadge";
+import UpdateStatusDialog from "./UpdateStatusDialog";
 
 type StudentWithProfile = NonNullable<
   Awaited<ReturnType<typeof getStudentsForIncharge>>["data"]
@@ -20,7 +20,7 @@ interface StudentTableProps {
   students: StudentWithProfile[];
 }
 
-export const StudentTable = ({ students }: StudentTableProps) => {
+const StudentTable = ({ students }: StudentTableProps) => {
   return (
     <div className="rounded-md border">
       <Table>
@@ -48,16 +48,21 @@ export const StudentTable = ({ students }: StudentTableProps) => {
                 <TableCell>{student.email}</TableCell>
                 <TableCell>{student.studentProfile?.branch || "N/A"}</TableCell>
                 <TableCell>
-                  <StatusBadge
-                    status={student.studentProfile?.status || "INACTIVE"}
-                  />
+                  {student.studentProfile ?
+                    <StatusBadge status={student.studentProfile.status!} />
+                  : <span className="text-muted-foreground text-sm">
+                      Profile missing
+                    </span>
+                  }
                 </TableCell>
                 <TableCell className="text-right">
-                  <UpdateStatusDialog
-                    userId={student.id}
-                    currentStatus={student.studentProfile?.status || "INACTIVE"}
-                    studentName={student.name}
-                  />
+                  {student.studentProfile ?
+                    <UpdateStatusDialog
+                      userId={student.id}
+                      currentStatus={student.studentProfile.status!}
+                      studentName={student.name}
+                    />
+                  : <span className="text-muted-foreground text-sm">N/A</span>}
                 </TableCell>
               </TableRow>
             ))
@@ -67,3 +72,5 @@ export const StudentTable = ({ students }: StudentTableProps) => {
     </div>
   );
 };
+
+export default StudentTable;

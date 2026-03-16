@@ -29,7 +29,7 @@ const statuses: StudentStatus[] = [
   "DROPPED",
 ];
 
-export const UpdateStatusDialog = ({
+const UpdateStatusDialog = ({
   userId,
   currentStatus,
   studentName,
@@ -188,3 +188,5 @@ export const UpdateStatusDialog = ({
     </Dialog>
   );
 };
+
+export default UpdateStatusDialog;

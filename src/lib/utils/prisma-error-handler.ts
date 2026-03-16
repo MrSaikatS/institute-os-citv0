@@ -311,7 +311,10 @@ export const createSuccessResponse = <T>(
 /**
  * Sanitizes sensitive data from objects recursively
  */
-const sanitizeSensitiveData = (obj: unknown): unknown => {
+const sanitizeSensitiveData = (
+  obj: unknown,
+  visited = new WeakSet(),
+): unknown => {
   if (obj === null || obj === undefined) {
     return obj;
   }
@@ -324,25 +327,38 @@ const sanitizeSensitiveData = (obj: unknown): unknown => {
     return obj;
   }
 
-  if (Array.isArray(obj)) {
-    return obj.map((item) => sanitizeSensitiveData(item));
-  }
-
   if (typeof obj === "object") {
-    const sanitized: Record<string, unknown> = {};
-    for (const [key, value] of Object.entries(obj)) {
-      // Check if key matches sensitive patterns
-      if (
-        /(phone|mobile|aadhar|ssn|address|family|email|name|number|fullName|dob)/i.test(
-          key,
-        )
-      ) {
-        sanitized[key] = "[REDACTED]";
-      } else {
-        sanitized[key] = sanitizeSensitiveData(value);
-      }
+    // Check for circular references
+    if (visited.has(obj)) {
+      return "[Circular]";
     }
-    return sanitized;
+
+    // Mark object as visited for current path
+    visited.add(obj);
+
+    try {
+      if (Array.isArray(obj)) {
+        return obj.map((item) => sanitizeSensitiveData(item, visited));
+      }
+
+      const sanitized: Record<string, unknown> = {};
+      for (const [key, value] of Object.entries(obj)) {
+        // Check if key matches sensitive patterns
+        if (
+          /(phone|mobile|aadhar|ssn|address|family|email|name|number|fullName|dob)/i.test(
+            key,
+          )
+        ) {
+          sanitized[key] = "[REDACTED]";
+        } else {
+          sanitized[key] = sanitizeSensitiveData(value, visited);
+        }
+      }
+      return sanitized;
+    } finally {
+      // Remove object from visited set when done processing current path
+      visited.delete(obj);
+    }
   }
 
   return obj;
